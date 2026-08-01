@@ -12,7 +12,7 @@ from common import bigquery_io, config, frankfurter, yahoo  # noqa: E402
 @dag(
     dag_id="ingest_market_data",
     schedule="0 18 * * 1-5",
-    start_date=datetime(2026, 8, 1),
+    start_date=datetime(2026, 1, 1),
     catchup=False,
     default_args={"owner": "gblack98", "retries": 3,
                   "retry_delay": timedelta(minutes=5)},

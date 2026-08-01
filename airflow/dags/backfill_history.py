@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from airflow.decorators import dag, task
 from airflow.models.param import Param
@@ -9,18 +9,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import bigquery_io, config, frankfurter, yahoo  # noqa: E402
 
-DEBUTS = {"1mo": "2025-01-01", "2y": "2024-01-01",
-          "5y": "2020-01-01", "10y": "2016-01-01"}
+JOURS = {"1mo": 30, "2y": 730, "5y": 1825, "10y": 3650}
+
+
+def il_y_a(jours):
+    return (datetime.now(timezone.utc) - timedelta(days=jours)).strftime("%Y-%m-%d")
 
 
 @dag(
     dag_id="backfill_history",
     schedule=None,
-    start_date=datetime(2026, 8, 1),
+    start_date=datetime(2026, 1, 1),
     catchup=False,
     default_args={"owner": "gblack98", "retries": 2,
                   "retry_delay": timedelta(minutes=10)},
-    params={"profondeur": Param("10y", enum=list(DEBUTS))},
+    params={"profondeur": Param("10y", enum=list(JOURS))},
     tags=["ingestion"],
 )
 def backfill_history():
@@ -38,7 +41,7 @@ def backfill_history():
 
     @task
     def taux(**contexte):
-        debut = DEBUTS[contexte["params"]["profondeur"]]
+        debut = il_y_a(JOURS[contexte["params"]["profondeur"]])
         lignes, _ = frankfurter.garder_journees_completes(
             frankfurter.recuperer(config.DEVISES, debut=debut), config.DEVISES)
         bigquery_io.charger_tout(bigquery_io.client(), "taux_change", lignes)

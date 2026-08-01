@@ -14,23 +14,26 @@ sys.path.insert(0, os.path.join(
 
 from common import bigquery_io, config, frankfurter, yahoo  # noqa: E402
 
-DEBUTS = {"1mo": "2025-01-01", "2y": "2024-01-01",
-          "5y": "2020-01-01", "10y": "2016-01-01"}
+JOURS = {"1mo": 30, "2y": 730, "5y": 1825, "10y": 3650}
+
+
+def il_y_a(jours):
+    return (datetime.now(timezone.utc) - timedelta(days=jours)).strftime("%Y-%m-%d")
 
 
 def main():
     p = argparse.ArgumentParser()
     groupe = p.add_mutually_exclusive_group(required=True)
     groupe.add_argument("--quotidien", action="store_true")
-    groupe.add_argument("--backfill", choices=list(DEBUTS))
+    groupe.add_argument("--backfill", choices=list(JOURS))
     args = p.parse_args()
 
     if args.quotidien:
         periode = "5d"
-        debut = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
+        debut = il_y_a(10)
     else:
         periode = args.backfill
-        debut = DEBUTS[periode]
+        debut = il_y_a(JOURS[periode])
 
     bq = bigquery_io.client()
     bigquery_io.creer_dataset(bq)

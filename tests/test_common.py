@@ -26,7 +26,7 @@ def ligne(jour, devise):
 
 def test_journee_complete_gardee():
     devises = ["XOF", "NGN"]
-    lignes = [ligne("2026-07-31", "XOF"), ligne("2026-07-31", "NGN")]
+    lignes = [ligne("2024-03-11", "XOF"), ligne("2024-03-11", "NGN")]
     gardees, ecartees = frankfurter.garder_journees_completes(lignes, devises)
     assert len(gardees) == 2 and ecartees == []
 
@@ -34,5 +34,5 @@ def test_journee_complete_gardee():
 def test_journee_incomplete_ecartee():
     devises = ["XOF", "NGN"]
     gardees, ecartees = frankfurter.garder_journees_completes(
-        [ligne("2026-08-01", "NGN")], devises)
-    assert gardees == [] and ecartees == ["2026-08-01"]
+        [ligne("2024-03-12", "NGN")], devises)
+    assert gardees == [] and ecartees == ["2024-03-12"]
