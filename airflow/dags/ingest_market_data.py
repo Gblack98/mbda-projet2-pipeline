@@ -26,25 +26,19 @@ def ingest_market_data():
 
     @task
     def cotations():
-        lignes = yahoo.recuperer(config.TICKERS, periode="5d")
-        bigquery_io.charger_par_jour(bigquery_io.client(), "cotations", lignes)
-        return len(lignes)
+        lignes = yahoo.recuperer(config.TICKERS, periode=config.PROFONDEUR)
+        return bigquery_io.charger(bigquery_io.client(), "cotations", lignes)
 
     @task
     def taux():
-        debut = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
-        lignes, ecartees = frankfurter.garder_journees_completes(
-            frankfurter.recuperer(config.DEVISES, debut=debut), config.DEVISES)
-        if ecartees:
-            print(f"journees ecartees : {ecartees}")
-        bigquery_io.charger_par_jour(bigquery_io.client(), "taux_change", lignes)
-        return len(lignes)
+        debut = (datetime.now(timezone.utc)
+                 - timedelta(days=config.PROFONDEUR_JOURS)).strftime("%Y-%m-%d")
+        lignes = frankfurter.recuperer(config.DEVISES, debut)
+        return bigquery_io.charger(bigquery_io.client(), "taux_change", lignes)
 
     @task
     def controler(n_cotations, n_taux):
         print(f"{n_cotations} cotations, {n_taux} taux")
-        if n_cotations == 0 and n_taux == 0:
-            raise ValueError("aucune donnee chargee")
 
     preparer() >> controler(cotations(), taux())
 

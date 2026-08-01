@@ -57,3 +57,7 @@ DEVISES = ["XOF", "MRU", "NGN", "GHS", "GMD", "CVE",
 
 # Yahoo cote certains instruments en centimes.
 SOUS_UNITES = {"USX": "USD", "GBp": "GBP", "ZAc": "ZAR"}
+
+# Profondeur d'historique rechargee a chaque execution.
+PROFONDEUR = "10y"
+PROFONDEUR_JOURS = 3650

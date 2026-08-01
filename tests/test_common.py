@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "airflow", "dags"))
 
-from common import config, frankfurter
+from common import config, schemas
 
 
 def test_tickers_uniques():
@@ -16,23 +16,12 @@ def test_hierarchie_complete():
         assert all(ligne)
 
 
-def test_xof_suivi():
+def test_devises_uniques():
+    assert len(config.DEVISES) == len(set(config.DEVISES))
     assert "XOF" in config.DEVISES
 
 
-def ligne(jour, devise):
-    return {"date_taux": jour, "devise_cible": devise}
-
-
-def test_journee_complete_gardee():
-    devises = ["XOF", "NGN"]
-    lignes = [ligne("2024-03-11", "XOF"), ligne("2024-03-11", "NGN")]
-    gardees, ecartees = frankfurter.garder_journees_completes(lignes, devises)
-    assert len(gardees) == 2 and ecartees == []
-
-
-def test_journee_incomplete_ecartee():
-    devises = ["XOF", "NGN"]
-    gardees, ecartees = frankfurter.garder_journees_completes(
-        [ligne("2024-03-12", "NGN")], devises)
-    assert gardees == [] and ecartees == ["2024-03-12"]
+def test_tables_sans_partition():
+    """Le Sandbox supprime les partitions de plus de 60 jours."""
+    for infos in schemas.TABLES.values():
+        assert "partition" not in infos
