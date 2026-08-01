@@ -1,0 +1,24 @@
+# Secrets
+*.json
+!package.json
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Airflow
+airflow_home/
+*.db
+*.log
+logs/
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Système
+.DS_Store
