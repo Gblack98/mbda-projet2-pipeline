@@ -1,0 +1,59 @@
+digraph etoile {
+  bgcolor="#F1F4F2";
+  fontname="DejaVu Sans";
+  node [fontname="DejaVu Sans Mono", fontsize=10, shape=plain];
+  edge [color="#3D4F48", penwidth=1.1, arrowhead=none];
+
+  fct [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
+      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_cotation_journaliere</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#DCEDEA"><I>grain : instrument × jour</I></TD></TR>
+      <TR><TD ALIGN="LEFT">date_id (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">instrument_id (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">devise_id (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">ouverture · cloture · haut · bas</TD></TR>
+      <TR><TD ALIGN="LEFT">volume</TD></TR>
+      <TR><TD ALIGN="LEFT">cloture_normalisee  (÷100 si USX, GBp, ZAc)</TD></TR>
+      <TR><TD ALIGN="LEFT">cloture_eur  (via taux du jour)</TD></TR>
+      <TR><TD ALIGN="LEFT">variation_pct · volatilite_10j</TD></TR>
+    </TABLE>>];
+
+  temps [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
+      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_temps</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">date_id (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">annee · trimestre · mois</TD></TR>
+      <TR><TD ALIGN="LEFT">semaine · est_jour_ouvre</TD></TR>
+    </TABLE>>];
+
+  instr [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
+      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_instrument</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">instrument_id (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">libelle</TD></TR>
+      <TR><TD ALIGN="LEFT">classe_actif ► secteur ► sous_secteur</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>hiérarchie à 3 niveaux = le cube</I></TD></TR>
+    </TABLE>>];
+
+  devise [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
+      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_devise</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">devise_id (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">libelle · symbole</TD></TR>
+      <TR><TD ALIGN="LEFT">regime</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>dérivé : variance nulle = arrimé</I></TD></TR>
+    </TABLE>>];
+
+  expo [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
+      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>exportations (contexte pays)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">pays · annee · categorie</TD></TR>
+      <TR><TD ALIGN="LEFT">part_exportations</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>Banque Mondiale — joint par catégorie</I></TD></TR>
+    </TABLE>>];
+
+  temps -> fct; instr -> fct;
+  fct -> devise; fct -> expo;
+  {rank=same; temps; instr;}
+  {rank=same; devise; expo;}
+}

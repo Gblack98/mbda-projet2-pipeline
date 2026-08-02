@@ -22,3 +22,4 @@ logs/
 
 # Système
 .DS_Store
+docs/__pycache__/

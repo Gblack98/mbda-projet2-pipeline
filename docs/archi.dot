@@ -1,0 +1,43 @@
+digraph archi {
+  rankdir=LR;
+  bgcolor="#F1F4F2";
+  fontname="DejaVu Sans";
+  node [fontname="DejaVu Sans", fontsize=11, shape=box, style="rounded,filled",
+        fillcolor=white, color="#CFD9D4", penwidth=1.2, margin="0.18,0.12"];
+  edge [fontname="DejaVu Sans", fontsize=9, color="#3D4F48", penwidth=1.1];
+
+  subgraph cluster_sources {
+    label="Sources (APIs publiques, sans clé)";
+    fontsize=11; fontcolor="#6B7E76"; color="#CFD9D4"; style=rounded;
+    yahoo   [label="Yahoo Finance\n41 instruments — OHLCV\nquotidien, 10 ans"];
+    frank   [label="Frankfurter (BCE)\n14 devises — taux EUR\nquotidien, 10 ans"];
+    wb      [label="Banque Mondiale\n8 pays — parts\nd'exportations, annuel"];
+  }
+
+  airflow [label="AIRFLOW\ningest_market_data\nlun-ven 18h00\n\npreparer → cotations\n            taux\n            references\n         → controler",
+           fillcolor="#DCEDEA", color="#0F766E", fontcolor="#16211D"];
+
+  subgraph cluster_bq {
+    label="BigQuery — entrepôt";
+    fontsize=11; fontcolor="#6B7E76"; color="#CFD9D4"; style=rounded;
+    raw   [label="raw\ncotations · taux_change\ninstruments · devises\nexportations",
+           fillcolor="#FFF7EC", color="#B45309"];
+    marts [label="marts\nschéma en étoile\n(travail dbt)",
+           fillcolor="#FFF7EC", color="#B45309"];
+  }
+
+  dbt [label="dbt\nstaging → marts\ntests qualité", fillcolor="#DCEDEA", color="#0F766E"];
+
+  looker [label="Looker Studio\nconnexion native"];
+  pbi    [label="Power BI\nvia export CSV"];
+
+  github [label="GitHub\ncode du DAG et des modèles", shape=box, style="rounded,filled,dashed",
+          fillcolor="#E6EBE8", fontcolor="#6B7E76", color="#6B7E76"];
+
+  yahoo -> airflow; frank -> airflow; wb -> airflow;
+  airflow -> raw [label="extraction complète\nWRITE_TRUNCATE"];
+  raw -> dbt; dbt -> marts;
+  marts -> looker; marts -> pbi;
+  github -> airflow [style=dashed, arrowhead=none];
+  github -> dbt [style=dashed, arrowhead=none];
+}
