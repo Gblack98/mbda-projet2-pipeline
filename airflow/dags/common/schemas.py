@@ -20,9 +20,36 @@ TAUX = [
     bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
 ]
 
+INSTRUMENTS = [
+    bigquery.SchemaField("instrument_id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("libelle", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("classe_actif", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("secteur", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("sous_secteur", "STRING", mode="REQUIRED"),
+]
+
+DEVISES = [
+    bigquery.SchemaField("devise_id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("libelle", "STRING"),
+    bigquery.SchemaField("symbole", "STRING"),
+    bigquery.SchemaField("publiee_depuis", "DATE"),
+    bigquery.SchemaField("publiee_jusqua", "DATE"),
+]
+
+EXPORTATIONS = [
+    bigquery.SchemaField("pays", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("annee", "INTEGER", mode="REQUIRED"),
+    bigquery.SchemaField("categorie", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("part_exportations", "FLOAT", mode="REQUIRED"),
+    bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
+]
+
 # Pas de partitionnement : le Sandbox supprime toute partition de plus de
 # 60 jours, ce qui effacerait l'historique.
 TABLES = {
     "cotations": {"schema": COTATIONS, "cluster": ["instrument_id", "date_cotation"]},
     "taux_change": {"schema": TAUX, "cluster": ["devise_cible", "date_taux"]},
+    "instruments": {"schema": INSTRUMENTS},
+    "devises": {"schema": DEVISES},
+    "exportations": {"schema": EXPORTATIONS},
 }

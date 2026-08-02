@@ -61,3 +61,14 @@ SOUS_UNITES = {"USX": "USD", "GBp": "GBP", "ZAc": "ZAR"}
 # Profondeur d'historique rechargee a chaque execution.
 PROFONDEUR = "10y"
 PROFONDEUR_JOURS = 3650
+
+# Pays suivis (codes ISO3) et indicateurs Banque Mondiale : part de chaque
+# categorie dans les exportations de marchandises.
+PAYS = ["SEN", "MRT", "NGA", "GHA", "CIV", "MLI", "BFA", "BEN"]
+
+INDICATEURS_EXPORT = {
+    "TX.VAL.FUEL.ZS.UN": "Energie",
+    "TX.VAL.MMTL.ZS.UN": "Metaux",
+    "TX.VAL.AGRI.ZS.UN": "Agricoles",
+    "TX.VAL.FOOD.ZS.UN": "Alimentaire",
+}

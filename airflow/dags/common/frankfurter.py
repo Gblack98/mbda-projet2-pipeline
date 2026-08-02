@@ -23,3 +23,18 @@ def recuperer(devises, debut):
     if not lignes:
         raise RuntimeError("aucun taux recupere")
     return lignes
+
+
+URL_DEVISES = "https://api.frankfurter.dev/v2/currencies"
+
+
+def devises(codes):
+    reponse = requests.get(URL_DEVISES, headers=ENTETES, timeout=30)
+    reponse.raise_for_status()
+    return [{
+        "devise_id": c["iso_code"],
+        "libelle": c["name"],
+        "symbole": c["symbol"],
+        "publiee_depuis": c["start_date"],
+        "publiee_jusqua": c["end_date"],
+    } for c in reponse.json() if c["iso_code"] in codes]

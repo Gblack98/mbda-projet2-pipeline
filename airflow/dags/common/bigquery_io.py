@@ -23,7 +23,8 @@ def charger(bq, table, lignes):
 
     table_id = f"{config.PROJET}.{config.DATASET}.{table}"
     ref = bigquery.Table(table_id, schema=schemas.TABLES[table]["schema"])
-    ref.clustering_fields = schemas.TABLES[table]["cluster"]
+    if "cluster" in schemas.TABLES[table]:
+        ref.clustering_fields = schemas.TABLES[table]["cluster"]
     bq.create_table(ref, exists_ok=True)
 
     bq.load_table_from_json(lignes, table_id, job_config=bigquery.LoadJobConfig(

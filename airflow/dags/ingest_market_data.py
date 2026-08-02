@@ -6,7 +6,9 @@ from airflow.decorators import dag, task
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from common import bigquery_io, config, frankfurter, yahoo  # noqa: E402
+from common import bigquery_io, config, frankfurter, worldbank, yahoo  # noqa: E402
+
+CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
 
 @dag(
@@ -37,10 +39,19 @@ def ingest_market_data():
         return bigquery_io.charger(bigquery_io.client(), "taux_change", lignes)
 
     @task
-    def controler(n_cotations, n_taux):
-        print(f"{n_cotations} cotations, {n_taux} taux")
+    def references():
+        bq = bigquery_io.client()
+        instruments = [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS]
+        bigquery_io.charger(bq, "instruments", instruments)
+        bigquery_io.charger(bq, "devises", frankfurter.devises(config.DEVISES))
+        exportations = worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT)
+        return bigquery_io.charger(bq, "exportations", exportations)
 
-    preparer() >> controler(cotations(), taux())
+    @task
+    def controler(n_cotations, n_taux, n_exportations):
+        print(f"{n_cotations} cotations, {n_taux} taux, {n_exportations} exportations")
+
+    preparer() >> controler(cotations(), taux(), references())
 
 
 ingest_market_data()

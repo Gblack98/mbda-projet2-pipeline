@@ -25,3 +25,14 @@ def test_tables_sans_partition():
     """Le Sandbox supprime les partitions de plus de 60 jours."""
     for infos in schemas.TABLES.values():
         assert "partition" not in infos
+
+
+def test_pays_uniques():
+    assert len(config.PAYS) == len(set(config.PAYS))
+    assert {"SEN", "MRT"} <= set(config.PAYS)
+
+
+def test_indicateurs_export():
+    assert len(config.INDICATEURS_EXPORT) == 4
+    for categorie in config.INDICATEURS_EXPORT.values():
+        assert categorie
