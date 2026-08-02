@@ -36,3 +36,16 @@ def test_indicateurs_export():
     assert len(config.INDICATEURS_EXPORT) == 4
     for categorie in config.INDICATEURS_EXPORT.values():
         assert categorie
+
+
+def test_correspondance_secteurs_complete():
+    """Chaque secteur declare doit apparaitre dans la correspondance."""
+    secteurs = {i[3] for i in config.INSTRUMENTS}
+    assert secteurs <= set(config.CATEGORIE_EXPORT)
+
+
+def test_categories_export_connues():
+    """Les categories visees doivent exister cote Banque Mondiale."""
+    connues = set(config.INDICATEURS_EXPORT.values())
+    for categorie in config.CATEGORIE_EXPORT.values():
+        assert categorie is None or categorie in connues

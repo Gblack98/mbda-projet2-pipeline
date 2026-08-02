@@ -1,22 +1,8 @@
-digraph etoile {
+digraph constellation {
   bgcolor="#F1F4F2";
   fontname="DejaVu Sans";
   node [fontname="DejaVu Sans Mono", fontsize=10, shape=plain];
   edge [color="#3D4F48", penwidth=1.1, arrowhead=none];
-
-  fct [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
-      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_cotation_journaliere</B></FONT></TD></TR>
-      <TR><TD BGCOLOR="#DCEDEA"><I>grain : instrument × jour</I></TD></TR>
-      <TR><TD ALIGN="LEFT">date_id (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">instrument_id (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">devise_id (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">ouverture · cloture · haut · bas</TD></TR>
-      <TR><TD ALIGN="LEFT">volume</TD></TR>
-      <TR><TD ALIGN="LEFT">cloture_normalisee  (÷100 si USX, GBp, ZAc)</TD></TR>
-      <TR><TD ALIGN="LEFT">cloture_eur  (via taux du jour)</TD></TR>
-      <TR><TD ALIGN="LEFT">variation_pct · volatilite_10j</TD></TR>
-    </TABLE>>];
 
   temps [label=<
     <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
@@ -32,7 +18,7 @@ digraph etoile {
       <TR><TD ALIGN="LEFT">instrument_id (PK)</TD></TR>
       <TR><TD ALIGN="LEFT">libelle</TD></TR>
       <TR><TD ALIGN="LEFT">classe_actif ► secteur ► sous_secteur</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>hiérarchie à 3 niveaux = le cube</I></TD></TR>
+      <TR><TD ALIGN="LEFT">secteur (FK vers dim_secteur)</TD></TR>
     </TABLE>>];
 
   devise [label=<
@@ -41,19 +27,42 @@ digraph etoile {
       <TR><TD ALIGN="LEFT">devise_id (PK)</TD></TR>
       <TR><TD ALIGN="LEFT">libelle · symbole</TD></TR>
       <TR><TD ALIGN="LEFT">regime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>dérivé : variance nulle = arrimé</I></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>dérivé : coef. de variation sous seuil</I></TD></TR>
     </TABLE>>];
 
-  expo [label=<
+  secteur [label=<
     <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
-      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>exportations (contexte pays)</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">pays · annee · categorie</TD></TR>
-      <TR><TD ALIGN="LEFT">part_exportations</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>Banque Mondiale — joint par catégorie</I></TD></TR>
+      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_secteur</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">secteur (PK)</TD></TR>
+      <TR><TD ALIGN="LEFT">categorie_export</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>correspondance N:1 déclarée</I></TD></TR>
     </TABLE>>];
 
-  temps -> fct; instr -> fct;
-  fct -> devise; fct -> expo;
-  {rank=same; temps; instr;}
-  {rank=same; devise; expo;}
+  fct1 [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
+      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_cotation_journaliere</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#DCEDEA"><I>grain : instrument × jour</I></TD></TR>
+      <TR><TD ALIGN="LEFT">date_id (FK) · instrument_id (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">devise_id (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">ouverture · cloture · haut · bas · volume</TD></TR>
+      <TR><TD ALIGN="LEFT">cloture_normalisee (÷100 si USX, GBp, ZAc)</TD></TR>
+      <TR><TD ALIGN="LEFT">cloture_eur · variation_pct · volatilite_10j</TD></TR>
+    </TABLE>>];
+
+  fct2 [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
+      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_exportations_pays</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#DCEDEA"><I>grain : pays × catégorie × année</I></TD></TR>
+      <TR><TD ALIGN="LEFT">pays · annee</TD></TR>
+      <TR><TD ALIGN="LEFT">categorie_export (FK)</TD></TR>
+      <TR><TD ALIGN="LEFT">part_exportations</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>Banque Mondiale — jamais joint</I></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>directement aux cotations</I></TD></TR>
+    </TABLE>>];
+
+  temps -> fct1; instr -> fct1; devise -> fct1;
+  instr -> secteur; secteur -> fct2;
+
+  {rank=same; temps; instr; devise;}
+  {rank=same; fct1; fct2;}
 }

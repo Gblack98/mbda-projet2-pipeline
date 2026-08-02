@@ -72,3 +72,20 @@ INDICATEURS_EXPORT = {
     "TX.VAL.AGRI.ZS.UN": "Agricoles",
     "TX.VAL.FOOD.ZS.UN": "Alimentaire",
 }
+
+# Rattachement des secteurs aux categories d'exportation de la Banque Mondiale.
+# Declare explicitement car la relation est N:1 : joindre sur le libelle
+# produirait des doublons et laisserait des categories sans correspondance.
+CATEGORIE_EXPORT = {
+    "Energie": "Energie",
+    "Hydrocarbures": "Energie",
+    "Metaux precieux": "Metaux",
+    "Metaux industriels": "Metaux",
+    "Mines": "Metaux",
+    "Agricoles": "Agricoles",
+    "Cereales": "Alimentaire",
+    "Elevage": "Alimentaire",
+    "Telecoms": None,
+    "Actions": None,
+    "Volatilite": None,
+}

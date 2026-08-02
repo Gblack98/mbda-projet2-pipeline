@@ -30,3 +30,7 @@ print(f"devises : {bigquery_io.charger(bq, 'devises', devises)} lignes")
 
 exportations = worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT)
 print(f"exportations : {bigquery_io.charger(bq, 'exportations', exportations)} lignes")
+
+secteurs = [{"secteur": s, "categorie_export": c}
+            for s, c in config.CATEGORIE_EXPORT.items()]
+print(f"secteurs : {bigquery_io.charger(bq, 'secteurs', secteurs)} lignes")

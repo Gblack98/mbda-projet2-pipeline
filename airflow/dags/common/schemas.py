@@ -36,6 +36,11 @@ DEVISES = [
     bigquery.SchemaField("publiee_jusqua", "DATE"),
 ]
 
+SECTEURS = [
+    bigquery.SchemaField("secteur", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("categorie_export", "STRING"),
+]
+
 EXPORTATIONS = [
     bigquery.SchemaField("pays", "STRING", mode="REQUIRED"),
     bigquery.SchemaField("annee", "INTEGER", mode="REQUIRED"),
@@ -52,4 +57,5 @@ TABLES = {
     "instruments": {"schema": INSTRUMENTS},
     "devises": {"schema": DEVISES},
     "exportations": {"schema": EXPORTATIONS},
+    "secteurs": {"schema": SECTEURS},
 }

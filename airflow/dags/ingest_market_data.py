@@ -44,6 +44,9 @@ def ingest_market_data():
         instruments = [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS]
         bigquery_io.charger(bq, "instruments", instruments)
         bigquery_io.charger(bq, "devises", frankfurter.devises(config.DEVISES))
+        secteurs = [{"secteur": s, "categorie_export": c}
+                    for s, c in config.CATEGORIE_EXPORT.items()]
+        bigquery_io.charger(bq, "secteurs", secteurs)
         exportations = worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT)
         return bigquery_io.charger(bq, "exportations", exportations)
 

@@ -7,14 +7,17 @@
 ![Architecture](img/architecture.png)
 
 Trois sources publiques alimentent un DAG Airflow quotidien, qui charge les
-données brutes dans BigQuery. dbt les transforme en schéma en étoile, exploité
-par les outils de restitution.
+données brutes dans BigQuery. dbt les transforme en modèle dimensionnel,
+exploité par les outils de restitution.
 
 Deux règles structurent l'ensemble :
 
-- `raw` n'est jamais modifié — c'est une copie fidèle des sources
-- chaque exécution recharge tout (`WRITE_TRUNCATE`), ce qui rend le pipeline
-  idempotent : le rejouer aboutit au même état
+- **Aucune transformation dans `raw`** : les données y sont écrites telles que
+  les API les renvoient, unités hétérogènes comprises. Toute correction relève
+  de dbt.
+- **Chaque exécution réécrit intégralement les tables** (`WRITE_TRUNCATE`, pas
+  d'`INSERT` incrémental ni de purge). Le pipeline est donc idempotent :
+  le rejouer aboutit au même état.
 
 ## Sources
 
@@ -52,6 +55,7 @@ complexe sans être plus rapide.
 | `instruments` | 41 | configuration du projet |
 | `devises` | 14 | Frankfurter `/v2/currencies` |
 | `exportations` | 300 | Banque Mondiale `TX.VAL.*` |
+| `secteurs` | 11 | correspondance secteur → catégorie |
 
 ```
 cotations                        taux_change
@@ -69,25 +73,41 @@ instruments                 │    ├─ publiee_depuis DATE
 ├─ instrument_id    STRING ◀┘    └─ publiee_jusqua DATE
 ├─ libelle          STRING
 ├─ classe_actif     STRING       exportations
-├─ secteur          STRING       ├─ pays               STRING
-└─ sous_secteur     STRING       ├─ annee              INTEGER
-                                 ├─ categorie          STRING
-                                 └─ part_exportations  FLOAT
+├─ secteur          STRING ─┐    ├─ pays               STRING
+└─ sous_secteur     STRING  │    ├─ annee              INTEGER
+                            │    ├─ categorie          STRING ─┐
+secteurs                    │    └─ part_exportations  FLOAT   │
+├─ secteur          STRING ◀┘                                  │
+└─ categorie_export STRING ◀───────────────────────────────────┘
 ```
 
-### `marts` — schéma en étoile à construire
+### `marts` — modèle à construire
 
-![Schéma en étoile](img/schema_etoile.png)
+![Modèle dimensionnel](img/schema_etoile.png)
 
-Granularité de la table de faits : **un instrument, un jour**.
+**Deux tables de faits partageant des dimensions conformes** (constellation),
+et non une étoile unique : les deux grains sont incompatibles.
+
+| Table de faits | Grain |
+|---|---|
+| `fct_cotation_journaliere` | instrument × **jour** |
+| `fct_exportations_pays` | pays × catégorie × **année** |
 
 | Table cible | Construite depuis |
 |---|---|
 | `fct_cotation_journaliere` | `cotations` + `taux_change` |
+| `fct_exportations_pays` | `exportations` |
 | `dim_temps` | dérivée des dates |
 | `dim_instrument` | `instruments` |
 | `dim_devise` | `devises` + `taux_change` |
-| contexte pays | `exportations` |
+| `dim_secteur` | `secteurs` |
+
+**Ne jamais joindre `exportations` directement aux cotations.** Les libellés ne
+correspondent pas (`Metaux` côté exportations contre `Metaux precieux` et
+`Metaux industriels` côté instruments) : une jointure sur le libellé perdrait
+silencieusement deux catégories sur quatre et multiplierait les autres par le
+nombre d'instruments du secteur. `dim_secteur` déclare la correspondance N:1 de
+façon explicite et testable.
 
 ## Points d'attention pour la transformation
 
@@ -105,8 +125,19 @@ Son absence sur les années antérieures est normale, ce n'est pas un trou de
 données.
 
 **Régime de change.** Volontairement non déclaré en base : il se dérive de la
-variance des taux (une devise dont le taux ne varie jamais est arrimée). Éviter
-une saisie manuelle, plusieurs devises ayant des régimes non évidents.
+variance observée des taux, ce qui évite une classification manuelle erronée.
+
+Utiliser un **seuil sur le coefficient de variation**, pas une égalité stricte.
+Sur les données actuelles, XOF et CVE ont un écart-type exactement nul (une
+seule valeur distincte sur plus de 2 500 jours, la BCE publiant le taux arrimé
+comme une constante), mais le MAD à 1,99 % relève d'un panier — ni arrimé, ni
+franchement flottant. Un seuil rend la classification plus honnête et résiste
+mieux à l'arrivée de nouvelles devises.
+
+Le régime peut aussi **changer dans le temps** : le MRU a été redénominé en
+2018, le NGN a connu plusieurs dévaluations. Une variance calculée sur dix ans
+lisse ces ruptures ; une fenêtre glissante annuelle serait plus fidèle si
+l'analyse porte sur l'évolution des régimes.
 
 ## Contraintes BigQuery Sandbox
 
