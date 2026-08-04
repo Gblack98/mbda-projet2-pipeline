@@ -4,9 +4,14 @@ with taux_eur as (
     where devise_base = 'EUR'
 ),
 
+bornes as (
+    select min(date_cotation) as debut, max(date_cotation) as fin
+    from {{ ref('stg_cotations') }}
+),
 calendrier as (
     select jour, devise_cible
-    from unnest(generate_date_array('2016-01-01', current_date())) as jour
+    from bornes,
+         unnest(generate_date_array(bornes.debut, bornes.fin)) as jour
     cross join (select distinct devise_cible from taux_eur)
 ),
 taux_complet as (

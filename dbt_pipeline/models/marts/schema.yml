@@ -27,15 +27,21 @@ models:
           - accepted_values:
               arguments:
                 values: ['arrime', 'gere', 'flottant', 'reference']
-  - name: dim_pays_exposition
+  - name: fct_exportations_pays
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [pays, annee, categorie_export]
     columns:
       - name: pays
         tests:
           - not_null
-      - name: categorie
+      - name: annee
         tests:
           - not_null
-      - name: poids_export
+      - name: categorie_export
+        tests:
+          - not_null
+      - name: part_exportations
         tests:
           - not_null
   - name: fct_cotation_journaliere
