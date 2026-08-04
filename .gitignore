@@ -19,6 +19,7 @@ logs/
 target/
 dbt_packages/
 logs/
+.user.yml
 
 # Système
 .DS_Store
