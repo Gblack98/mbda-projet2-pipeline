@@ -25,7 +25,7 @@ print(f"taux : {bigquery_io.charger(bq, 'taux_change', taux)} lignes")
 instruments = [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS]
 print(f"instruments : {bigquery_io.charger(bq, 'instruments', instruments)} lignes")
 
-devises = frankfurter.devises(config.DEVISES)
+devises = frankfurter.devises(config.DEVISES_DIMENSION)
 print(f"devises : {bigquery_io.charger(bq, 'devises', devises)} lignes")
 
 exportations = worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT)
