@@ -1,5 +1,4 @@
 version: 2
-
 models:
   - name: dim_temps
     columns:
@@ -7,7 +6,6 @@ models:
         tests:
           - unique
           - not_null
-
   - name: dim_instrument
     columns:
       - name: instrument_id
@@ -17,14 +15,18 @@ models:
       - name: classe_actif
         tests:
           - not_null
-
   - name: dim_devise
     columns:
       - name: devise_id
         tests:
           - unique
           - not_null
-
+      - name: regime
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['arrime', 'gere', 'flottant', 'reference']
   - name: dim_pays_exposition
     columns:
       - name: pays
@@ -36,8 +38,10 @@ models:
       - name: poids_export
         tests:
           - not_null
-
   - name: fct_cotation_journaliere
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [date_cotation, instrument_id]
     columns:
       - name: date_cotation
         tests:
