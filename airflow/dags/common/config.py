@@ -53,7 +53,11 @@ INSTRUMENTS = [
 TICKERS = [i[0] for i in INSTRUMENTS]
 
 DEVISES = ["XOF", "MRU", "NGN", "GHS", "GMD", "CVE",
-           "USD", "GBP", "JPY", "CNY", "ZAR", "MAD", "EGP", "KES"]
+           "USD", "GBP", "JPY", "CNY", "ZAR", "MAD", "EGP", "KES", "CAD"]
+
+# L'euro sert de base aux taux : il n'a pas de cours, mais doit figurer dans
+# la dimension pour que les cotations en euros aient une devise rattachee.
+DEVISES_DIMENSION = DEVISES + ["EUR"]
 
 # Yahoo cote certains instruments en centimes.
 SOUS_UNITES = {"USX": "USD", "GBp": "GBP", "ZAc": "ZAR"}

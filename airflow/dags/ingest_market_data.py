@@ -43,7 +43,7 @@ def ingest_market_data():
         bq = bigquery_io.client()
         instruments = [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS]
         bigquery_io.charger(bq, "instruments", instruments)
-        bigquery_io.charger(bq, "devises", frankfurter.devises(config.DEVISES))
+        bigquery_io.charger(bq, "devises", frankfurter.devises(config.DEVISES_DIMENSION))
         secteurs = [{"secteur": s, "categorie_export": c}
                     for s, c in config.CATEGORIE_EXPORT.items()]
         bigquery_io.charger(bq, "secteurs", secteurs)
