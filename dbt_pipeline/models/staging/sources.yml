@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    database: crucial-bonsai-418120
+    schema: raw
+    tables:
+      - name: cotations
+      - name: instruments
+      - name: devises
+      - name: taux_change
+      - name: secteurs
+      - name: exportations

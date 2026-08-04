@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: dim_temps
+    columns:
+      - name: date_jour
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_instrument
+    columns:
+      - name: instrument_id
+        tests:
+          - unique
+          - not_null
+      - name: classe_actif
+        tests:
+          - not_null
+
+  - name: dim_devise
+    columns:
+      - name: devise_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_pays_exposition
+    columns:
+      - name: pays
+        tests:
+          - not_null
+      - name: categorie
+        tests:
+          - not_null
+      - name: poids_export
+        tests:
+          - not_null
+
+  - name: fct_cotation_journaliere
+    columns:
+      - name: date_cotation
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: date_jour
+      - name: instrument_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_instrument')
+                field: instrument_id
+      - name: cloture
+        tests:
+          - not_null
+      - name: devise_cotation
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['USD', 'USX', 'EUR', 'GBp', 'GBP', 'ZAc', 'CAD', 'JPY']
