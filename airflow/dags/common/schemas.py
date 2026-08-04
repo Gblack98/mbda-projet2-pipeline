@@ -1,0 +1,60 @@
+from google.cloud import bigquery
+
+COTATIONS = [
+    bigquery.SchemaField("date_cotation", "DATE", mode="REQUIRED"),
+    bigquery.SchemaField("instrument_id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("ouverture", "FLOAT"),
+    bigquery.SchemaField("plus_haut", "FLOAT"),
+    bigquery.SchemaField("plus_bas", "FLOAT"),
+    bigquery.SchemaField("cloture", "FLOAT", mode="REQUIRED"),
+    bigquery.SchemaField("volume", "INTEGER"),
+    bigquery.SchemaField("devise_cotation", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
+]
+
+TAUX = [
+    bigquery.SchemaField("date_taux", "DATE", mode="REQUIRED"),
+    bigquery.SchemaField("devise_base", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("devise_cible", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("taux", "FLOAT", mode="REQUIRED"),
+    bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
+]
+
+INSTRUMENTS = [
+    bigquery.SchemaField("instrument_id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("libelle", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("classe_actif", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("secteur", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("sous_secteur", "STRING", mode="REQUIRED"),
+]
+
+DEVISES = [
+    bigquery.SchemaField("devise_id", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("libelle", "STRING"),
+    bigquery.SchemaField("symbole", "STRING"),
+    bigquery.SchemaField("publiee_depuis", "DATE"),
+    bigquery.SchemaField("publiee_jusqua", "DATE"),
+]
+
+SECTEURS = [
+    bigquery.SchemaField("secteur", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("categorie_export", "STRING"),
+]
+
+EXPORTATIONS = [
+    bigquery.SchemaField("pays", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("annee", "INTEGER", mode="REQUIRED"),
+    bigquery.SchemaField("categorie", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("part_exportations", "FLOAT", mode="REQUIRED"),
+    bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
+]
+
+# pas de partitionnement : le Sandbox purge au-dela de 60 jours
+TABLES = {
+    "cotations": {"schema": COTATIONS, "cluster": ["instrument_id", "date_cotation"]},
+    "taux_change": {"schema": TAUX, "cluster": ["devise_cible", "date_taux"]},
+    "instruments": {"schema": INSTRUMENTS},
+    "devises": {"schema": DEVISES},
+    "exportations": {"schema": EXPORTATIONS},
+    "secteurs": {"schema": SECTEURS},
+}

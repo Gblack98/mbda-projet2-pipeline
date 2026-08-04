@@ -1,0 +1,68 @@
+name: Pipeline quotidien
+
+on:
+  schedule:
+    - cron: "0 18 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt dbt-bigquery==1.12.0
+
+      - name: Cle de service
+        env:
+          GCP_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          mkdir -p ~/.gcp
+          printf '%s' "$GCP_KEY" > ~/.gcp/mbda-projet2-sa.json
+
+      - name: Profil dbt
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<'EOF'
+          dbt_pipeline:
+            target: dev
+            outputs:
+              dev:
+                type: bigquery
+                method: service-account
+                project: crucial-bonsai-418120
+                dataset: marts
+                keyfile: /home/runner/.gcp/mbda-projet2-sa.json
+                threads: 4
+                location: EU
+          EOF
+
+      - name: Ingestion
+        run: python scripts/ingest.py
+
+      - name: Modeles et tests dbt
+        working-directory: dbt_pipeline
+        run: dbt build
+
+      - name: Alerte par mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USER }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Pipeline MBDA
+          to: ${{ secrets.MAIL_TO }}
+          subject: "Echec du pipeline — ${{ github.run_id }}"
+          body: |
+            L'execution du ${{ github.run_started_at }} a echoue.
+
+            Etape en echec et journaux :
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

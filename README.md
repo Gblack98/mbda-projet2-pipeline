@@ -27,6 +27,17 @@ Granularité de la table de faits : **un instrument, un jour**.
 ```
 dim_temps ┐
 dim_instrument ├─► fct_cotation_journaliere
-dim_devise ┤
-dim_pays_exposition ┘
+dim_devise ┘
+
+dim_pays_exposition   (contexte pays, non joint)
+```
+
+Détails et diagrammes : [docs/architecture.md](docs/architecture.md).
+
+## Lancer
+
+```bash
+pip install -r requirements.txt
+python scripts/ingest.py          # remplit raw
+cd dbt_pipeline && dbt build      # construit marts
 ```
