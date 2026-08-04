@@ -1,0 +1,5 @@
+dbt_pipeline/target/
+dbt_pipeline/dbt_packages/
+dbt_pipeline/logs/
+logs/
+*.json
