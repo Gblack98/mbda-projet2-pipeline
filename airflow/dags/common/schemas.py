@@ -49,8 +49,7 @@ EXPORTATIONS = [
     bigquery.SchemaField("recupere_le", "TIMESTAMP", mode="REQUIRED"),
 ]
 
-# Pas de partitionnement : le Sandbox supprime toute partition de plus de
-# 60 jours, ce qui effacerait l'historique.
+# pas de partitionnement : le Sandbox purge au-dela de 60 jours
 TABLES = {
     "cotations": {"schema": COTATIONS, "cluster": ["instrument_id", "date_cotation"]},
     "taux_change": {"schema": TAUX, "cluster": ["devise_cible", "date_taux"]},

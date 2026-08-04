@@ -1,5 +1,3 @@
-"""Ingestion sans Airflow : python scripts/ingest.py"""
-
 import os
 import sys
 from datetime import datetime, timedelta, timezone

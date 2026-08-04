@@ -1,68 +1,23 @@
-digraph constellation {
-  bgcolor="#F1F4F2";
-  fontname="DejaVu Sans";
-  node [fontname="DejaVu Sans Mono", fontsize=10, shape=plain];
-  edge [color="#3D4F48", penwidth=1.1, arrowhead=none];
+digraph modele {
+  bgcolor="white";
+  rankdir=TB;
+  node [fontname="DejaVu Sans Mono", fontsize=10, shape=record, style=filled,
+        fillcolor="#F5F5F5", color="#555555"];
+  edge [color="#555555", arrowhead=none];
 
-  temps [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
-      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_temps</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">date_id (PK)</TD></TR>
-      <TR><TD ALIGN="LEFT">annee · trimestre · mois</TD></TR>
-      <TR><TD ALIGN="LEFT">semaine · est_jour_ouvre</TD></TR>
-    </TABLE>>];
+  temps [label="{dim_temps|date_jour\lannee\ltrimestre\lmois\ljour_semaine\lest_weekend\l}"];
+  instr [label="{dim_instrument|instrument_id\llibelle\lclasse_actif\lsecteur\lsous_secteur\lcategorie_export\l}"];
+  devise [label="{dim_devise|devise_id\lnom_devise\lsymbole\l}"];
 
-  instr [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
-      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_instrument</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">instrument_id (PK)</TD></TR>
-      <TR><TD ALIGN="LEFT">libelle</TD></TR>
-      <TR><TD ALIGN="LEFT">classe_actif ► secteur ► sous_secteur</TD></TR>
-      <TR><TD ALIGN="LEFT">secteur (FK vers dim_secteur)</TD></TR>
-    </TABLE>>];
+  fct [label="{fct_cotation_journaliere|date_cotation\linstrument_id\ldevise_cotation\ldevise_pivot\louverture / plus_haut / plus_bas\lcloture\lcloture_eur\lvolume\l}",
+       fillcolor="#E8E8E8", color="#222222"];
 
-  devise [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
-      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_devise</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">devise_id (PK)</TD></TR>
-      <TR><TD ALIGN="LEFT">libelle · symbole</TD></TR>
-      <TR><TD ALIGN="LEFT">regime</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>dérivé : coef. de variation sous seuil</I></TD></TR>
-    </TABLE>>];
+  pays [label="{dim_pays_exposition|pays\lcategorie\lderniere_annee_disponible\lpoids_export\l}"];
 
-  secteur [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#B45309" BGCOLOR="white">
-      <TR><TD BGCOLOR="#B45309"><FONT COLOR="white"><B>dim_secteur</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">secteur (PK)</TD></TR>
-      <TR><TD ALIGN="LEFT">categorie_export</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>correspondance N:1 déclarée</I></TD></TR>
-    </TABLE>>];
-
-  fct1 [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
-      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_cotation_journaliere</B></FONT></TD></TR>
-      <TR><TD BGCOLOR="#DCEDEA"><I>grain : instrument × jour</I></TD></TR>
-      <TR><TD ALIGN="LEFT">date_id (FK) · instrument_id (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">devise_id (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">ouverture · cloture · haut · bas · volume</TD></TR>
-      <TR><TD ALIGN="LEFT">cloture_normalisee (÷100 si USX, GBp, ZAc)</TD></TR>
-      <TR><TD ALIGN="LEFT">cloture_eur · variation_pct · volatilite_10j</TD></TR>
-    </TABLE>>];
-
-  fct2 [label=<
-    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#0F766E" BGCOLOR="white">
-      <TR><TD BGCOLOR="#0F766E"><FONT COLOR="white"><B>fct_exportations_pays</B></FONT></TD></TR>
-      <TR><TD BGCOLOR="#DCEDEA"><I>grain : pays × catégorie × année</I></TD></TR>
-      <TR><TD ALIGN="LEFT">pays · annee</TD></TR>
-      <TR><TD ALIGN="LEFT">categorie_export (FK)</TD></TR>
-      <TR><TD ALIGN="LEFT">part_exportations</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>Banque Mondiale — jamais joint</I></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#FFF7EC"><I>directement aux cotations</I></TD></TR>
-    </TABLE>>];
-
-  temps -> fct1; instr -> fct1; devise -> fct1;
-  instr -> secteur; secteur -> fct2;
+  temps -> fct;
+  instr -> fct;
+  devise -> fct;
 
   {rank=same; temps; instr; devise;}
-  {rank=same; fct1; fct2;}
+  {rank=same; fct; pays;}
 }

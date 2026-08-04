@@ -1,7 +1,5 @@
 import subprocess
 
-# Un cadre par etape du flux : la meme structure graphviz, seules les
-# couleurs changent -> la mise en page reste identique d'un cadre a l'autre.
 ON_TEAL  = ('fillcolor="#0F766E", fontcolor="white", color="#0F766E"')
 ON_AMBER = ('fillcolor="#B45309", fontcolor="white", color="#B45309"')
 OFF      = ('fillcolor="white", fontcolor="#9AAAA3", color="#DDE5E1"')

@@ -1,7 +1,4 @@
-"""Regenere les schemas de docs/img/. Requiert graphviz et Pillow.
-
-    python docs/schemas.py
-"""
+# python docs/schemas.py -- requiert graphviz et Pillow
 
 import glob
 import os

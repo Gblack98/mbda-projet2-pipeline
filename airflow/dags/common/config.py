@@ -55,19 +55,15 @@ TICKERS = [i[0] for i in INSTRUMENTS]
 DEVISES = ["XOF", "MRU", "NGN", "GHS", "GMD", "CVE",
            "USD", "GBP", "JPY", "CNY", "ZAR", "MAD", "EGP", "KES", "CAD"]
 
-# L'euro sert de base aux taux : il n'a pas de cours, mais doit figurer dans
-# la dimension pour que les cotations en euros aient une devise rattachee.
+# l'euro n'a pas de cours mais doit exister dans la dimension
 DEVISES_DIMENSION = DEVISES + ["EUR"]
 
 # Yahoo cote certains instruments en centimes.
 SOUS_UNITES = {"USX": "USD", "GBp": "GBP", "ZAc": "ZAR"}
 
-# Profondeur d'historique rechargee a chaque execution.
 PROFONDEUR = "10y"
 PROFONDEUR_JOURS = 3650
 
-# Pays suivis (codes ISO3) et indicateurs Banque Mondiale : part de chaque
-# categorie dans les exportations de marchandises.
 PAYS = ["SEN", "MRT", "NGA", "GHA", "CIV", "MLI", "BFA", "BEN"]
 
 INDICATEURS_EXPORT = {
@@ -77,9 +73,7 @@ INDICATEURS_EXPORT = {
     "TX.VAL.FOOD.ZS.UN": "Alimentaire",
 }
 
-# Rattachement des secteurs aux categories d'exportation de la Banque Mondiale.
-# Declare explicitement car la relation est N:1 : joindre sur le libelle
-# produirait des doublons et laisserait des categories sans correspondance.
+# rattachement secteur -> categorie Banque Mondiale (N:1)
 CATEGORIE_EXPORT = {
     "Energie": "Energie",
     "Hydrocarbures": "Energie",
