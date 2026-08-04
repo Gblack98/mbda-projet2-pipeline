@@ -2,6 +2,8 @@
 
 ![Pipeline](img/pipeline.gif)
 
+(version statique : `img/architecture.png`)
+
 ## Sources
 
 | Source | Contenu | Fréquence |
