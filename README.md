@@ -33,6 +33,7 @@ dim_pays_exposition   (contexte pays, non joint)
 ```
 
 Détails et diagrammes : [docs/architecture.md](docs/architecture.md).
+Questions métier : [docs/questions-metier.md](docs/questions-metier.md).
 
 ## Lancer
 

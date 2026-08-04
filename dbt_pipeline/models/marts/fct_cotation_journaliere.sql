@@ -51,7 +51,9 @@ cotations_mappees as (
     from {{ ref('stg_cotations') }} as c
     left join mapping as m
         on c.devise_cotation = m.devise_cotation
-)
+),
+
+with_variation as (
 select
     c.date_cotation,
     c.instrument_id,
@@ -71,3 +73,13 @@ from cotations_mappees as c
 left join taux_complet as t
     on t.date_taux = c.date_cotation
     and t.devise_cible = c.devise_pivot
+)
+
+select
+    *,
+    round(
+        (cloture / nullif(lag(cloture) over (
+            partition by instrument_id order by date_cotation
+        ), 0) - 1) * 100
+    , 4) as variation_pct
+from with_variation
