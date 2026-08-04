@@ -68,6 +68,9 @@ fonctionne pas.
 
 ## Régénérer les schémas
 
+Les diagrammes sont des pages HTML capturées avec Chrome en mode headless.
+
 ```bash
-python docs/schemas.py
+python docs/diagramme/frames.py   # architecture animée + version statique
+python docs/diagramme/rendre.py   # modèle dimensionnel
 ```
