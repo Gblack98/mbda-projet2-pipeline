@@ -24,3 +24,4 @@ logs/
 # Système
 .DS_Store
 docs/__pycache__/
+docs/diagramme/frames/
