@@ -47,7 +47,9 @@ jobs:
 
       - name: Modeles et tests dbt
         working-directory: dbt_pipeline
-        run: dbt build
+        run: |
+          dbt deps
+          dbt build
 
       - name: Alerte par mail
         if: failure()
