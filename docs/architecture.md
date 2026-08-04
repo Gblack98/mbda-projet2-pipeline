@@ -48,6 +48,24 @@ Grain de la table de faits : un instrument, un jour.
 - Le Sandbox interdit le DML et purge les partitions au-delà de 60 jours :
   chargement par lots, pas de partitionnement par date.
 
+## Exécution automatique
+
+`.github/workflows/pipeline.yml` lance l'ingestion puis `dbt build` les jours
+ouvrés à 18h, et envoie un mail si une étape échoue.
+
+Secrets à définir dans les paramètres du dépôt :
+
+| Secret | Contenu |
+|---|---|
+| `GCP_SA_KEY` | clé de service BigQuery (JSON) |
+| `MAIL_USER` | adresse Gmail d'envoi |
+| `MAIL_PASSWORD` | mot de passe d'application Gmail |
+| `MAIL_TO` | destinataires, séparés par des virgules |
+
+Le mot de passe d'application se crée sur myaccount.google.com/apppasswords
+et suppose la validation en deux étapes activée. Le mot de passe habituel ne
+fonctionne pas.
+
 ## Régénérer les schémas
 
 ```bash
