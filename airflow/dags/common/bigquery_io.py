@@ -16,8 +16,6 @@ def creer_dataset(bq):
 
 
 def charger(bq, table, lignes):
-    """Remplace la table entiere. L'extraction complete tenant en 27 secondes,
-    c'est plus simple qu'un chargement incremental et idempotent d'office."""
     if not lignes:
         raise RuntimeError(f"{table} : rien a charger")
 
