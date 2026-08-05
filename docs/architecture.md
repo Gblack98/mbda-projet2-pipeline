@@ -16,7 +16,8 @@ Aucune ne demande de clé.
 
 ## Ingestion
 
-Le DAG `ingest_market_data` tourne les jours ouvrés à 18h et remplit `raw` :
+Le DAG `ingest_market_data` tourne les jours ouvrés à 18h : il remplit `raw`,
+puis enchaîne `dbt build` (tâche `transformer`) pour construire `marts`.
 
 | Table | Lignes |
 |---|---|
