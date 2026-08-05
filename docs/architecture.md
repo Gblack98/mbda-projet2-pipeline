@@ -16,7 +16,28 @@ Aucune ne demande de clé.
 
 ## Ingestion
 
-Le DAG `ingest_market_data` tourne les jours ouvrés à 18h et remplit `raw` :
+Le DAG `ingest_market_data` tourne les jours ouvrés à 18h.
+
+```
+preparer
+   ├── cotations ──────┐
+   ├── taux ───────────┤
+   ├── instruments ────┤
+   ├── devises ────────┼── controler_qualite ── dbt_deps ── dbt_run ── dbt_test
+   ├── secteurs ───────┤
+   └── exportations ───┘
+```
+
+Chaque source est chargée par sa propre tâche : une panne côté Banque Mondiale
+n'empêche pas les autres d'aboutir, et Airflow ne relance que celle qui a
+échoué. `controler_qualite` interrompt le DAG si une table est vide ou si le
+nombre d'instruments ne correspond pas à la configuration.
+
+L'échec de n'importe quelle tâche déclenche un mail. Les identifiants viennent
+de `MBDA_SMTP_USER`, `MBDA_SMTP_PASSWORD` et `MBDA_SMTP_TO` ; sans eux
+l'alerte est ignorée sans faire échouer la tâche.
+
+Contenu de `raw` :
 
 | Table | Lignes |
 |---|---|
