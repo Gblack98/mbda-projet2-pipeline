@@ -1,3 +1,5 @@
+{{ config(cluster_by=['pays', 'annee']) }}
+
 select
     pays,
     annee,

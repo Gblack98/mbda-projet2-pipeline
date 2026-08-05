@@ -1,12 +1,20 @@
 version: 2
 models:
   - name: dim_temps
+    description: >
+      Calendrier journalier borné dynamiquement sur la plage de dates
+      réellement présente dans stg_cotations (min à max).
     columns:
       - name: date_jour
         tests:
           - unique
           - not_null
   - name: dim_instrument
+    description: >
+      Un instrument par ligne : 41 matières premières, actions et indices
+      suivis quotidiennement. categorie_export rattache le secteur à une
+      catégorie d'export Banque Mondiale (peut être nul pour les secteurs
+      sans équivalent, ex. Telecoms, Actions, Volatilite).
     columns:
       - name: instrument_id
         tests:
@@ -16,6 +24,9 @@ models:
         tests:
           - not_null
   - name: dim_devise
+    description: >
+      Une devise par ligne, avec son régime de change dérivé de la
+      variabilité de son taux face à l'euro sur l'historique disponible.
     columns:
       - name: devise_id
         tests:
@@ -28,6 +39,11 @@ models:
               arguments:
                 values: ['arrime', 'gere', 'flottant', 'reference']
   - name: fct_exportations_pays
+    description: >
+      Table de faits annuelle : part de chaque catégorie dans les
+      exportations d'un pays. Grain pays x catégorie x année, distinct de
+      fct_cotation_journaliere — les deux tables de faits ne se joignent
+      jamais directement (voir docs/questions-metier.md).
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [pays, annee, categorie_export]
@@ -41,10 +57,19 @@ models:
       - name: categorie_export
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_instrument')
+                field: categorie_export
       - name: part_exportations
         tests:
           - not_null
   - name: fct_cotation_journaliere
+    description: >
+      Table de faits quotidienne : un instrument, un jour. cloture_eur
+      convertit la clôture native (après division des devises cotées en
+      centimes) en euros via dim_devise ; variation_pct est la variation
+      en % par rapport à la clôture native du jour de bourse précédent.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [date_cotation, instrument_id]
@@ -64,6 +89,9 @@ models:
                 to: ref('dim_instrument')
                 field: instrument_id
       - name: cloture
+        tests:
+          - not_null
+      - name: cloture_eur
         tests:
           - not_null
       - name: devise_cotation
