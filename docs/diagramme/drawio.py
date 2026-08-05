@@ -98,7 +98,7 @@ d = bloc("dbt", [("staging", "6 vues"), ("normalisation", "USX GBp ZAc"),
 # --- marts
 marts = bloc("marts", [("fct_cotation_journaliere", ""), ("dim_temps", ""),
                        ("dim_instrument", ""), ("dim_devise", ""),
-                       ("dim_pays_exposition", "")],
+                       ("fct_exportations_pays", "")],
              1100, y0 + 40, "bigquery.svg", VIOLET, w=230)
 
 # --- restitution
