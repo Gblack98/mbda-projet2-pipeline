@@ -69,6 +69,12 @@ Grain de la table de faits : un instrument, un jour.
 - Le Sandbox interdit le DML et purge les partitions au-delà de 60 jours :
   chargement par lots, pas de partitionnement par date.
 
+## Deux ordonnanceurs, un seul à activer
+
+Le DAG Airflow et le workflow GitHub Actions couvrent le même périmètre, à la
+même heure. N'en activer qu'un : Airflow pour une démonstration ou une
+machine allumée en continu, Actions pour une exécution autonome.
+
 ## Exécution automatique
 
 `.github/workflows/pipeline.yml` lance l'ingestion puis `dbt build` les jours
