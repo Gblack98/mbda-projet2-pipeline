@@ -63,7 +63,9 @@ def ingest_market_data():
         subprocess.run(["dbt", "deps"], cwd=DBT_PROJET, check=True)
         subprocess.run(["dbt", "build"], cwd=DBT_PROJET, check=True)
 
-    preparer() >> controler(cotations(), taux(), references()) >> transformer()
+    c, t, r = cotations(), taux(), references()
+    preparer() >> [c, t, r]
+    controler(c, t, r) >> transformer()
 
 
 ingest_market_data()
