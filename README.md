@@ -29,10 +29,11 @@ dim_temps ┐
 dim_instrument ├─► fct_cotation_journaliere
 dim_devise ┘
 
-dim_pays_exposition   (contexte pays, non joint)
+fct_exportations_pays (grain distinct : pays × catégorie × année, non jointe)
 ```
 
 Détails et diagrammes : [docs/architecture.md](docs/architecture.md).
+Questions métier : [docs/questions-metier.md](docs/questions-metier.md).
 
 ## Lancer
 

@@ -74,3 +74,7 @@ Les diagrammes sont des pages HTML capturées avec Chrome en mode headless.
 python docs/diagramme/frames.py   # architecture animée + version statique
 python docs/diagramme/rendre.py   # modèle dimensionnel
 ```
+
+`docs/diagramme/architecture.drawio` est une version éditable du même schéma :
+elle s'ouvre sur app.diagrams.net et s'exporte en GIF animé depuis
+`Fichier > Exporter > GIF animé`. Régénérée par `python docs/diagramme/drawio.py`.

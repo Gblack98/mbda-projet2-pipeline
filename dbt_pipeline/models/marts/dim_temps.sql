@@ -1,3 +1,8 @@
+with bornes as (
+    select min(date_cotation) as debut, max(date_cotation) as fin
+    from {{ ref('stg_cotations') }}
+)
+
 select
     date_jour,
     extract(year from date_jour) as annee,
@@ -6,4 +11,5 @@ select
     extract(day from date_jour) as jour,
     format_date('%A', date_jour) as jour_semaine,
     extract(dayofweek from date_jour) in (1, 7) as est_weekend
-from unnest(generate_date_array('2016-01-01', current_date())) as date_jour
+from bornes,
+     unnest(generate_date_array(bornes.debut, bornes.fin)) as date_jour
