@@ -3,7 +3,9 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from airflow.decorators import dag, task
+from airflow.operators.bash import BashOperator
 
+RACINE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import bigquery_io, config, frankfurter, worldbank, yahoo  # noqa: E402
@@ -54,7 +56,18 @@ def ingest_market_data():
     def controler(n_cotations, n_taux, n_exportations):
         print(f"{n_cotations} cotations, {n_taux} taux, {n_exportations} exportations")
 
-    preparer() >> controler(cotations(), taux(), references())
+    # dbt vit dans un autre environnement : ses versions de google-cloud-*
+    # sont incompatibles avec celles d'Airflow.
+    transformer = BashOperator(
+        task_id="dbt_build",
+        bash_command=(
+            f"cd {RACINE}/dbt_pipeline && "
+            f"{RACINE}/venv/bin/dbt deps && "
+            f"{RACINE}/venv/bin/dbt build"
+        ),
+    )
+
+    preparer() >> controler(cotations(), taux(), references()) >> transformer
 
 
 ingest_market_data()
