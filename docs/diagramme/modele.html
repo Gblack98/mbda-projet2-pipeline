@@ -31,7 +31,9 @@
   .fait { min-width:290px }
   .fait h2 { background:#1D4ED8; color:#fff }
   .fait li { color:#334155 }
-  .isole h2 { background:#F1F5F9; color:#475569; border-bottom:1px solid #E2E8F0 }
+  .isole { min-width:250px }
+  .isole h2 { background:#1D4ED8; color:#fff }
+  .isole li { color:#334155 }
 
   .note { font-size:11px; color:#94A3B8; text-align:center; max-width:250px; line-height:1.45 }
   svg.liens { position:absolute; inset:0; width:100%; height:100%; pointer-events:none }
@@ -71,13 +73,13 @@
       <li>devise_cotation · devise_pivot</li>
       <li>ouverture · plus_haut · plus_bas</li>
       <li>cloture · volume</li>
-      <li>cloture_eur</li>
+      <li>cloture_eur · variation_pct</li>
     </ul>
   </div>
 
   <div class="tbl isole">
-    <h2>dim_pays_exposition <em>32 · non jointe</em></h2>
-    <ul><li>pays · categorie</li><li>derniere_annee_disponible</li><li>poids_export</li></ul>
+    <h2>fct_exportations_pays <em>300</em></h2>
+    <ul><li><b>pays</b> · <b>annee</b> · <b>categorie_export</b></li><li>part_exportations</li></ul>
   </div>
 
 </div>
