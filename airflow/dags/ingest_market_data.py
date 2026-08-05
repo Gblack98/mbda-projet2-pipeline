@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -10,6 +11,9 @@ from common import bigquery_io, config, frankfurter, worldbank, yahoo  # noqa: E
 
 CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
+RACINE_PROJET = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DBT_PROJET = os.path.join(RACINE_PROJET, "dbt_pipeline")
+
 
 @dag(
     dag_id="ingest_market_data",
@@ -18,7 +22,7 @@ CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sou
     catchup=False,
     default_args={"owner": "gblack98", "retries": 3,
                   "retry_delay": timedelta(minutes=5)},
-    tags=["ingestion"],
+    tags=["ingestion", "transformation"],
 )
 def ingest_market_data():
 
@@ -54,7 +58,12 @@ def ingest_market_data():
     def controler(n_cotations, n_taux, n_exportations):
         print(f"{n_cotations} cotations, {n_taux} taux, {n_exportations} exportations")
 
-    preparer() >> controler(cotations(), taux(), references())
+    @task
+    def transformer():
+        subprocess.run(["dbt", "deps"], cwd=DBT_PROJET, check=True)
+        subprocess.run(["dbt", "build"], cwd=DBT_PROJET, check=True)
+
+    preparer() >> controler(cotations(), taux(), references()) >> transformer()
 
 
 ingest_market_data()
