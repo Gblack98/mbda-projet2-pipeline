@@ -51,10 +51,21 @@ Grain de la table de faits : un instrument, un jour.
 
 ## Exécution automatique
 
-`.github/workflows/pipeline.yml` lance l'ingestion puis `dbt build` les jours
-ouvrés à 18h, et envoie un mail si une étape échoue.
+Deux déclencheurs couvrent le même calendrier (jours ouvrés, 18h) — n'en
+activer qu'un seul en production, sinon deux `WRITE_TRUNCATE` concurrents
+peuvent écraser les mêmes tables au même moment :
 
-Secrets à définir dans les paramètres du dépôt :
+- **`.github/workflows/pipeline.yml`** (par défaut) — enchaîne l'ingestion
+  puis `dbt build`, envoie un mail si une étape échoue. Ne nécessite aucun
+  orchestrateur déployé.
+- **Le DAG `ingest_market_data`** (Airflow) — pipeline complet autonome :
+  ingestion puis `dbt deps && dbt build` (tâche `transformer`). À réserver à
+  qui dispose déjà d'un Airflow déployé ; le worker doit avoir
+  `pip install -r requirements.txt` (dbt inclus) et un accès à
+  `MBDA_KEYFILE`/aux identifiants BigQuery.
+
+Secrets à définir dans les paramètres du dépôt (pour le déclencheur GitHub
+Actions) :
 
 | Secret | Contenu |
 |---|---|
