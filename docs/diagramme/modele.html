@@ -39,7 +39,7 @@
   svg.liens { position:absolute; inset:0; width:100%; height:100%; pointer-events:none }
 </style>
 
-<h1>Modèle dimensionnel — dataset <code>marts</code></h1>
+<h1>Modèle dimensionnel du dataset <code>marts</code></h1>
 <div class="sous">Grain de la table de faits : un instrument, un jour. Les cotations exprimées en centimes sont divisées puis converties en euros.</div>
 
 <div class="grille">
@@ -50,7 +50,7 @@
   </svg>
 
   <div class="tbl dim">
-    <h2>dim_temps <em>3 653</em></h2>
+    <h2>dim_temps <em>3 651</em></h2>
     <ul><li><b>date_jour</b></li><li>annee · trimestre · mois</li><li>jour_semaine</li><li>est_weekend</li></ul>
   </div>
 
@@ -61,13 +61,13 @@
 
   <div class="tbl dim">
     <h2>dim_devise <em>16</em></h2>
-    <ul><li><b>devise_id</b></li><li>nom_devise</li><li>symbole</li></ul>
+    <ul><li><b>devise_id</b></li><li>nom_devise · symbole</li><li>coefficient_variation</li><li>regime</li></ul>
   </div>
 
   <div></div>
 
   <div class="tbl fait">
-    <h2>fct_cotation_journaliere <em>103 085</em></h2>
+    <h2>fct_cotation_journaliere <em>103 084</em></h2>
     <ul>
       <li><b>date_cotation</b> · <b>instrument_id</b></li>
       <li>devise_cotation · devise_pivot</li>
