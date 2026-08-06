@@ -19,20 +19,30 @@ Aucune ne demande de clé.
 Le DAG `ingest_market_data` tourne les jours ouvrés à 18h.
 
 ```
-preparer
-   ├── cotations ──────┐
-   ├── taux ───────────┤
-   ├── instruments ────┤
-   ├── devises ────────┼── controler_qualite ── dbt_deps ── dbt_run ── dbt_test
-   ├── secteurs ───────┤
-   └── exportations ───┘
-
-controler_qualite ── dbt_deps ── dbt_seed ── dbt_run ── dbt_test ── dbt_docs
+                ┌─ marches ──────────┐
+                │   cotations        │
+                │   taux             │
+preparer ──────►┤                    ├──► controler_volumes
+                │                    │            │
+                ├─ referentiels ─────┤            ▼
+                │   instruments      │    ┌─ transformation ─┐
+                │   devises          │    │  deps            │
+                │   secteurs         │    │  seed            │
+                │   exportations     │    │  run_staging     │
+                └────────────────────┘    │  run_marts       │
+                                          │  test            │
+                                          │  docs            │
+                                          └──────────────────┘
+                                                   │
+                                                   ▼
+                                              recapituler
 ```
 
-`dbt_seed` charge la table de correspondance des devises, dont dépend
-`fct_cotation_journaliere`. `dbt_docs` produit la documentation navigable dans
-`dbt_pipeline/target/index.html`.
+Les sources sont séparées en deux groupes : `marches` pour ce qui change chaque
+jour, `referentiels` pour ce qui bouge rarement. `seed` charge la table de
+correspondance des devises, dont dépend `fct_cotation_journaliere`. `run_staging`
+et `run_marts` sont distincts pour repérer tout de suite quelle couche casse.
+`docs` produit la documentation navigable dans `dbt_pipeline/target/index.html`.
 
 Chaque source est chargée par sa propre tâche : une panne côté Banque Mondiale
 n'empêche pas les autres d'aboutir, et Airflow ne relance que celle qui a
