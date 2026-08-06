@@ -20,3 +20,7 @@ models:
       +schema: staging
     marts:
       +materialized: table
+
+seeds:
+  dbt_pipeline:
+    +schema: staging
