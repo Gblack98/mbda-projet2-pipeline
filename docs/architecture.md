@@ -26,7 +26,13 @@ preparer
    ├── devises ────────┼── controler_qualite ── dbt_deps ── dbt_run ── dbt_test
    ├── secteurs ───────┤
    └── exportations ───┘
+
+controler_qualite ── dbt_deps ── dbt_seed ── dbt_run ── dbt_test ── dbt_docs
 ```
+
+`dbt_seed` charge la table de correspondance des devises, dont dépend
+`fct_cotation_journaliere`. `dbt_docs` produit la documentation navigable dans
+`dbt_pipeline/target/index.html`.
 
 Chaque source est chargée par sa propre tâche : une panne côté Banque Mondiale
 n'empêche pas les autres d'aboutir, et Airflow ne relance que celle qui a

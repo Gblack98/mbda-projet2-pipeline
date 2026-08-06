@@ -92,15 +92,17 @@ def ingest_market_data():
                 f"{n_instruments} instruments charges, {len(config.TICKERS)} attendus")
 
     deps = BashOperator(task_id="dbt_deps", bash_command=f"{DBT} deps")
+    charger_seeds = BashOperator(task_id="dbt_seed", bash_command=f"{DBT} seed")
     executer = BashOperator(task_id="dbt_run", bash_command=f"{DBT} run")
     verifier = BashOperator(task_id="dbt_test", bash_command=f"{DBT} test")
+    documenter = BashOperator(task_id="dbt_docs", bash_command=f"{DBT} docs generate")
 
     depart = preparer()
     charges = [cotations(), taux(), instruments(),
                devises(), secteurs(), exportations()]
     depart >> charges
 
-    controler_qualite(*charges) >> deps >> executer >> verifier
+    controler_qualite(*charges) >> deps >> charger_seeds >> executer >> verifier >> documenter
 
 
 ingest_market_data()
