@@ -1,0 +1,90 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0 }
+  body {
+    width: 1280px; height: 880px; background: #f4f6f8;
+    font-family: "DejaVu Sans", system-ui, sans-serif; color: #1a1a19;
+    padding: 26px 30px; display: flex; flex-direction: column; gap: 16px;
+  }
+  .tete h1 { font-size: 20px; font-weight: 700; letter-spacing: -.02em }
+  .tete p { font-size: 13px; color: #5a6b64; margin-top: 4px }
+
+  .kpis { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px }
+  .kpi { background:#fff; border-radius:10px; padding:14px 16px;
+         box-shadow:0 1px 3px rgba(15,23,42,.07) }
+  .kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums }
+  .kpi .l { font-size: 11px; color:#5a6b64; margin-top:2px }
+
+  .grand { background:#fff; border-radius:10px; padding:18px 20px; flex:1;
+           box-shadow:0 1px 3px rgba(15,23,42,.07); display:flex; flex-direction:column }
+  .grand h2 { font-size:13.5px; font-weight:650; margin-bottom:2px }
+  .grand .sous { font-size:11px; color:#5a6b64; margin-bottom:14px }
+
+  .barres { display:flex; flex-direction:column; gap:9px; flex:1; justify-content:center }
+  .ligne { display:grid; grid-template-columns:52px 1fr 58px; align-items:center; gap:10px }
+  .ligne .dev { font-size:11.5px; font-family:"DejaVu Sans Mono",monospace; text-align:right }
+  .piste { height:17px; background:#eef2f6; border-radius:4px; overflow:hidden }
+  .piste i { display:block; height:100%; border-radius:4px }
+  .ligne .val { font-size:11px; color:#5a6b64; font-variant-numeric:tabular-nums }
+
+  .bas { display:grid; grid-template-columns:1fr 250px; gap:14px; height:196px }
+  .carte { background:#fff; border-radius:10px; padding:14px 16px;
+           box-shadow:0 1px 3px rgba(15,23,42,.07) }
+  .carte h3 { font-size:12px; font-weight:650; margin-bottom:10px }
+  .legende { display:flex; gap:16px; font-size:11px; color:#5a6b64; margin-top:12px }
+  .legende span { display:flex; align-items:center; gap:6px }
+  .pastille { width:10px; height:10px; border-radius:3px; display:inline-block }
+  .filtre { font-size:11px; color:#5a6b64; border:1px solid #e2e8f0;
+            border-radius:6px; padding:7px 10px; margin-bottom:8px }
+</style>
+
+<div class="tete">
+  <h1>1. Le régime de change protège-t-il de la volatilité ?</h1>
+  <p>Les monnaies arrimées affichent une volatilité nulle, les flottantes jusqu'à 0,72.</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v" style="color:#2a78d6">0,000</div><div class="l">XOF · coefficient de variation sur 10 ans</div></div>
+  <div class="kpi"><div class="v" style="color:#eb6834">0,722</div><div class="l">NGN · coefficient de variation</div></div>
+  <div class="kpi"><div class="v">2 / 15</div><div class="l">devises arrimées sur 15 suivies</div></div>
+</div>
+
+<div class="grand">
+  <h2>Coefficient de variation par devise</h2>
+  <div class="sous">Écart-type rapporté à la moyenne, taux quotidiens 2016-2026</div>
+  <div class="barres">
+    <div class="ligne"><span class="dev">XOF</span><div class="piste"><i style="width:0.4%;background:#2a78d6"></i></div><span class="val">0,000</span></div>
+    <div class="ligne"><span class="dev">CVE</span><div class="piste"><i style="width:0.4%;background:#2a78d6"></i></div><span class="val">0,000</span></div>
+    <div class="ligne"><span class="dev">MAD</span><div class="piste"><i style="width:2.8%;background:#eda100"></i></div><span class="val">0,020</span></div>
+    <div class="ligne"><span class="dev">GBP</span><div class="piste"><i style="width:3.3%;background:#eda100"></i></div><span class="val">0,024</span></div>
+    <div class="ligne"><span class="dev">USD</span><div class="piste"><i style="width:6.7%;background:#eda100"></i></div><span class="val">0,048</span></div>
+    <div class="ligne"><span class="dev">MRU</span><div class="piste"><i style="width:8.0%;background:#eda100"></i></div><span class="val">0,058</span></div>
+    <div class="ligne"><span class="dev">ZAR</span><div class="piste"><i style="width:15.6%;background:#eb6834"></i></div><span class="val">0,112</span></div>
+    <div class="ligne"><span class="dev">GHS</span><div class="piste"><i style="width:60.8%;background:#eb6834"></i></div><span class="val">0,439</span></div>
+    <div class="ligne"><span class="dev">EGP</span><div class="piste"><i style="width:72.5%;background:#eb6834"></i></div><span class="val">0,523</span></div>
+    <div class="ligne"><span class="dev">NGN</span><div class="piste"><i style="width:100%;background:#eb6834"></i></div><span class="val">0,722</span></div>
+  </div>
+  <div class="legende">
+    <span><i class="pastille" style="background:#2a78d6"></i>Arrimé</span>
+    <span><i class="pastille" style="background:#eda100"></i>Géré</span>
+    <span><i class="pastille" style="background:#eb6834"></i>Flottant</span>
+  </div>
+</div>
+
+<div class="bas">
+  <div class="carte">
+    <h3>Nombre de valeurs distinctes du taux sur 10 ans</h3>
+    <div class="barres" style="gap:7px">
+      <div class="ligne"><span class="dev">XOF</span><div class="piste" style="height:13px"><i style="width:0.03%;background:#2a78d6"></i></div><span class="val">1</span></div>
+      <div class="ligne"><span class="dev">MRU</span><div class="piste" style="height:13px"><i style="width:55%;background:#eda100"></i></div><span class="val">1 889</span></div>
+      <div class="ligne"><span class="dev">NGN</span><div class="piste" style="height:13px"><i style="width:75%;background:#eb6834"></i></div><span class="val">2 563</span></div>
+    </div>
+  </div>
+  <div class="carte">
+    <h3>Filtres</h3>
+    <div class="filtre">Période : 2016 — 2026</div>
+    <div class="filtre">Régime : tous</div>
+    <div class="filtre">Devise : toutes</div>
+  </div>
+</div>
