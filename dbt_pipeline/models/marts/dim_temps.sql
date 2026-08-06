@@ -1,6 +1,5 @@
 with bornes as (
-    select min(date_cotation) as debut, max(date_cotation) as fin
-    from {{ ref('stg_cotations') }}
+    {{ bornes_cotation() }}
 )
 
 select

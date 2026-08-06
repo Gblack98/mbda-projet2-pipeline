@@ -1,0 +1,22 @@
+version: 2
+seeds:
+  - name: mapping_devise_cotation
+    description: >
+      Correspondance entre la devise de cotation brute renvoyée par Yahoo
+      Finance (parfois en centimes : USX, GBp, ZAc) et sa devise pivot avec
+      le facteur de division associé. Source unique consommée par
+      fct_cotation_journaliere pour calculer cloture_eur.
+    columns:
+      - name: devise_cotation
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD', 'USX', 'EUR', 'GBp', 'GBP', 'ZAc', 'CAD', 'JPY']
+      - name: devise_pivot
+        tests:
+          - not_null
+      - name: facteur
+        tests:
+          - not_null

@@ -1,3 +1,5 @@
+{{ config(cluster_by=['instrument_id', 'date_cotation']) }}
+
 with taux_eur as (
     select date_taux, devise_cible, taux
     from {{ ref('stg_taux_change') }}
@@ -5,8 +7,7 @@ with taux_eur as (
 ),
 
 bornes as (
-    select min(date_cotation) as debut, max(date_cotation) as fin
-    from {{ ref('stg_cotations') }}
+    {{ bornes_cotation() }}
 ),
 calendrier as (
     select jour, devise_cible
@@ -33,23 +34,10 @@ taux_complet as (
         on t.date_taux = c.jour
         and t.devise_cible = c.devise_cible
 ),
-mapping as (
-    select * from unnest([
-        struct('USD' as devise_cotation, 'USD' as devise_pivot, 1 as facteur),
-        struct('USX', 'USD', 100),
-        struct('EUR', 'EUR', 1),
-        struct('GBp', 'GBP', 100),
-        struct('GBP', 'GBP', 1),
-        struct('ZAc', 'ZAR', 100),
-        struct('CAD', 'CAD', 1),
-        struct('JPY', 'JPY', 1)
-    ])
-),
-
 cotations_mappees as (
     select c.*, m.devise_pivot, m.facteur
     from {{ ref('stg_cotations') }} as c
-    left join mapping as m
+    left join {{ ref('mapping_devise_cotation') }} as m
         on c.devise_cotation = m.devise_cotation
 ),
 
