@@ -46,8 +46,11 @@ et `run_marts` sont distincts pour repérer tout de suite quelle couche casse.
 
 Chaque source est chargée par sa propre tâche : une panne côté Banque Mondiale
 n'empêche pas les autres d'aboutir, et Airflow ne relance que celle qui a
-échoué. `controler_qualite` interrompt le DAG si une table est vide ou si le
-nombre d'instruments ne correspond pas à la configuration.
+échoué. `controler_volumes` interrompt le DAG si une table est vide, ou si un
+instrument de la configuration n'a ramené aucune cotation. Ce second contrôle
+compte les instruments réellement présents dans les lignes collectées : le
+client Yahoo ignore les tickers en erreur et ne lève que si les 41 échouent,
+donc sans lui une collecte réduite à quelques instruments passerait au vert.
 
 L'échec de n'importe quelle tâche déclenche un mail. Les identifiants viennent
 de `MBDA_SMTP_USER`, `MBDA_SMTP_PASSWORD` et `MBDA_SMTP_TO` ; sans eux
@@ -85,26 +88,40 @@ Grain de la table de faits : un instrument, un jour.
 - Le Sandbox interdit le DML et purge les partitions au-delà de 60 jours :
   chargement par lots, pas de partitionnement par date.
 
-## Deux ordonnanceurs, un seul à activer
-
-Le DAG Airflow et le workflow GitHub Actions couvrent le même périmètre, à la
-même heure. N'en activer qu'un : Airflow pour une démonstration ou une
-machine allumée en continu, Actions pour une exécution autonome.
-
 ## Exécution automatique
 
-Deux déclencheurs couvrent le même calendrier (jours ouvrés, 18h) — n'en
-activer qu'un seul en production, sinon deux `WRITE_TRUNCATE` concurrents
-peuvent écraser les mêmes tables au même moment :
+Deux déclencheurs couvrent le même périmètre. Un seul doit être planifié à la
+fois : ils écrivent les mêmes tables en `WRITE_TRUNCATE`, et deux exécutions
+simultanées s'écraseraient l'une l'autre.
 
-- **`.github/workflows/pipeline.yml`** (par défaut) — enchaîne l'ingestion
-  puis `dbt build`, envoie un mail si une étape échoue. Ne nécessite aucun
-  orchestrateur déployé.
-- **Le DAG `ingest_market_data`** (Airflow) — pipeline complet autonome :
-  ingestion puis `dbt deps && dbt build` (tâche `transformer`). À réserver à
-  qui dispose déjà d'un Airflow déployé ; le worker doit avoir
-  `pip install -r requirements.txt` (dbt inclus) et un accès à
-  `MBDA_KEYFILE`/aux identifiants BigQuery.
+- **Le DAG `ingest_market_data`** (Airflow), planifié les jours ouvrés à 18h.
+  C'est le déclencheur actif. Il couvre tout le pipeline, ingestion puis
+  groupe `transformation`. Il suppose un Airflow lancé, d'où
+  `lancer_airflow.sh`, et un accès à `MBDA_KEYFILE`.
+- **`.github/workflows/pipeline.yml`**, réduit au déclenchement manuel
+  (*Actions* puis *Run workflow*). Il enchaîne `scripts/ingest.py` puis
+  `dbt build`, et envoie un mail si une étape échoue. Son bloc `schedule` est
+  commenté dans le fichier : le remettre, et désactiver le DAG, pour une
+  exécution autonome sans machine allumée.
+
+## Versions d'Airflow
+
+Le DAG est vérifié sur **Airflow 2.9.3**, épinglé dans
+`requirements-airflow.txt`. Il s'importe aussi sous Airflow 3.x, mais les deux
+majeures ne sont pas interchangeables et l'écart s'est déjà manifesté deux
+fois :
+
+- `BashOperator` a quitté le coeur pour le provider `standard` en 3.0.
+  L'import du DAG essaie les deux chemins.
+- La clé `ts` a disparu du contexte passé aux callbacks en 3.x, ce qui
+  empêchait l'alerte mail de partir (issue #14). `alerte.sur_echec` ne dépend
+  plus du contexte pour l'horodatage.
+
+Airflow ne figure pas dans `requirements.txt` et ne doit pas y entrer : ses
+versions de `google-cloud-*` sont incompatibles avec celles de dbt, et ce
+fichier sert au workflow GitHub Actions, qui n'a pas besoin d'ordonnanceur.
+Les deux outils vivent dans des environnements séparés, raison pour laquelle
+le DAG appelle dbt par un chemin explicite et jamais par le `PATH`.
 
 Secrets à définir dans les paramètres du dépôt (pour le déclencheur GitHub
 Actions) :
