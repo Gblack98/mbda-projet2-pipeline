@@ -3,7 +3,14 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from airflow.decorators import dag, task, task_group
-from airflow.operators.bash import BashOperator
+
+# Airflow 3 a sorti BashOperator du coeur pour le mettre dans le provider
+# standard, et l'ancien chemin n'existe plus. L'equipe tourne sur les deux
+# majeures, le DAG doit s'importer des deux cotes.
+try:
+    from airflow.providers.standard.operators.bash import BashOperator
+except ImportError:
+    from airflow.operators.bash import BashOperator
 
 RACINE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -41,7 +48,11 @@ def ingest_market_data():
         @task
         def cotations():
             lignes = yahoo.recuperer(config.TICKERS, periode=config.PROFONDEUR)
-            return bigquery_io.charger(bigquery_io.client(), "cotations", lignes)
+            charges = bigquery_io.charger(bigquery_io.client(), "cotations", lignes)
+            return {
+                "lignes": charges,
+                "instruments": sorted({l["instrument_id"] for l in lignes}),
+            }
 
         @task
         def taux():
@@ -78,10 +89,10 @@ def ingest_market_data():
         return instruments(), devises(), secteurs(), exportations()
 
     @task
-    def controler_volumes(n_cotations, n_taux, n_instruments, n_devises,
+    def controler_volumes(cotations, n_taux, n_instruments, n_devises,
                           n_secteurs, n_exportations):
         volumes = {
-            "cotations": n_cotations,
+            "cotations": cotations["lignes"],
             "taux_change": n_taux,
             "instruments": n_instruments,
             "devises": n_devises,
@@ -95,9 +106,13 @@ def ingest_market_data():
         if vides:
             raise ValueError(f"tables vides : {', '.join(vides)}")
 
-        if n_instruments != len(config.TICKERS):
+        # yahoo.recuperer ignore les tickers qui echouent et ne leve que si les
+        # 41 tombent. Sans ce controle, une collecte reduite a un seul
+        # instrument passerait au vert.
+        manquants = sorted(set(config.TICKERS) - set(cotations["instruments"]))
+        if manquants:
             raise ValueError(
-                f"{n_instruments} instruments charges, {len(config.TICKERS)} attendus")
+                f"{len(manquants)} instruments sans cotation : {', '.join(manquants)}")
 
     @task_group(group_id="transformation")
     def transformation():

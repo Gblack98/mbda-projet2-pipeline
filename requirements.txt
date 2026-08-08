@@ -1,3 +1,5 @@
+# Ingestion, dbt et tests. Airflow n'est pas ici : versions de google-cloud-*
+# incompatibles avec dbt, il a son propre requirements-airflow.txt.
 google-cloud-bigquery==3.27.0
 requests==2.32.3
 pytest==8.3.4

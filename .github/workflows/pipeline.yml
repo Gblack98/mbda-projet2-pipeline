@@ -1,8 +1,13 @@
 name: Pipeline quotidien
 
+# Declenchement manuel seulement. Le DAG Airflow tient le meme calendrier
+# (jours ouvres, 18h) et ecrit les memes tables en WRITE_TRUNCATE : deux
+# executions simultanees se marcheraient dessus. Pour rendre ce workflow
+# autonome, remettre le bloc schedule ci-dessous et desactiver le DAG.
+#
+#   schedule:
+#     - cron: "0 18 * * 1-5"
 on:
-  schedule:
-    - cron: "0 18 * * 1-5"
   workflow_dispatch:
 
 jobs:
