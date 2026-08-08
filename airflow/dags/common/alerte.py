@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
 import os
 import smtplib
 import ssl
 from email.message import EmailMessage
+
 
 SERVEUR = "smtp.gmail.com"
 PORT = 465
@@ -35,6 +37,6 @@ def sur_echec(contexte):
         f"Tache   : {tache.task_id}\n"
         f"DAG     : {tache.dag_id}\n"
         f"Essai   : {tache.try_number}\n"
-        f"Date    : {contexte['ts']}\n\n"
+        f"Date    : {datetime.now(timezone.utc).isoformat()}\n\n"
         f"Journal : {tache.log_url}\n",
     )
