@@ -62,8 +62,8 @@ Contenu de `raw` :
 
 | Table | Lignes |
 |---|---|
-| `cotations` | ~103 000 |
-| `taux_change` | ~47 000 |
+| `cotations` | 103 104 |
+| `taux_change` | 47 040 |
 | `instruments` | 41 |
 | `devises` | 16 |
 | `exportations` | 300 |
@@ -72,7 +72,28 @@ Contenu de `raw` :
 Chaque exécution réécrit les tables entières (`WRITE_TRUNCATE`). Dix ans font
 34 Mo, l'incrémental n'apporterait rien et le rejeu reste sans effet de bord.
 
-`scripts/ingest.py` fait la même chose sans ordonnanceur.
+`scripts/ingest.py` fait la même chose sans ordonnanceur, avec les mêmes
+contrôles : les deux appellent `common/controles.py`.
+
+## Les trois datasets
+
+![Datasets](img/datasets.png)
+
+Une étape du pipeline par dataset, 17 Mo au total.
+
+`raw` est la copie fidèle des sources, sans aucune transformation. `marts_staging`
+contient six vues, qui ne stockent rien et relisent `raw` à la demande, plus les
+deux seeds versionnés dans le dépôt. `marts` porte le modèle en étoile et la
+couche décisionnelle, et c'est le **seul dataset à brancher dans un outil de
+restitution**.
+
+Une particularité à connaître : le Sandbox pose une expiration à 60 jours sur
+chaque table, comptée depuis sa création. Les tables de `marts` sont recréées à
+chaque `dbt run`, donc leur échéance recule à chaque exécution. Celles de `raw`
+ne sont créées qu'une fois puis rechargées, et `WRITE_TRUNCATE` ne repousse pas
+la date : `raw` expire avant `marts`. Le pipeline recrée la table à l'exécution
+suivante, l'extraction étant complète rien n'est perdu, mais il faut avoir lancé
+le pipeline pour que `raw` soit peuplée.
 
 ## Modèle
 

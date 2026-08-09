@@ -73,6 +73,7 @@
   .fleche.vive { background: #3B82F6 }
   .fleche.vive::after { border-left-color: #3B82F6 }
   .etiquette.vive { color: #2563EB; font-weight: 700 }
+  .t.agg { color:#0F766E; font-weight:600 }
 </style>
 
 <body data-etape="7">
@@ -91,8 +92,8 @@
   <div class="flux"><div style="width:100%"><div class="etiquette" id="l1">collecte</div><div class="fleche" id="f1"></div></div></div>
 
   <div class="etape" id="e-air">
-    <div class="carte"><img src="ico/airflow.svg"><span><b>Airflow</b><small>DAG quotidien · 18h</small></span></div>
-    <div class="carte"><img src="ico/python.svg"><span><b>scripts/ingest.py</b><small>sans ordonnanceur</small></span></div>
+    <div class="carte"><img src="ico/airflow.svg"><span><b>Airflow</b><small>DAG manuel · 16 tâches</small></span></div>
+    <div class="carte"><img src="ico/python.svg"><span><b>scripts/ingest.py</b><small>GitHub Actions · 18h37</small></span></div>
   </div>
 
   <div class="flux"><div style="width:100%"><div class="etiquette" id="l2">chargement</div><div class="fleche" id="f2"></div></div></div>
@@ -101,8 +102,8 @@
     <div class="bloc" id="e-raw">
       <div class="bloc-tete"><img src="ico/bigquery.svg"><b>raw</b><small>entrepôt</small></div>
       <div class="tables">
-        <div class="t">cotations <i>103 085</i></div>
-        <div class="t">taux_change <i>47 052</i></div>
+        <div class="t">cotations <i>103 104</i></div>
+        <div class="t">taux_change <i>47 040</i></div>
         <div class="t">instruments <i>41</i></div>
         <div class="t">devises <i>16</i></div>
         <div class="t">exportations <i>300</i></div>
@@ -115,11 +116,12 @@
 
   <div class="etape">
     <div class="bloc" id="e-dbt">
-      <div class="bloc-tete"><img src="ico/dbt.svg"><b>dbt</b><small>16 tests</small></div>
+      <div class="bloc-tete"><img src="ico/dbt.svg"><b>dbt</b><small>68 tests</small></div>
       <div class="tables">
         <div class="t">staging <i>6 vues</i></div>
         <div class="t">normalisation <i>USX · GBp · ZAc</i></div>
         <div class="t">conversion <i>→ EUR</i></div>
+        <div class="t">agrégation <i>6 tables</i></div>
       </div>
     </div>
   </div>
@@ -128,13 +130,14 @@
 
   <div class="etape">
     <div class="bloc" id="e-marts">
-      <div class="bloc-tete"><img src="ico/bigquery.svg"><b>marts</b><small>étoile</small></div>
+      <div class="bloc-tete"><img src="ico/bigquery.svg"><b>marts</b><small>étoile + agrégats</small></div>
       <div class="tables">
         <div class="t fait">fct_cotation_journaliere</div>
         <div class="t dim">dim_temps</div>
         <div class="t dim">dim_instrument</div>
         <div class="t dim">dim_devise</div>
         <div class="t fait">fct_exportations_pays</div>
+        <div class="t agg">agg_* · kpi_* <i>6</i></div>
       </div>
     </div>
   </div>

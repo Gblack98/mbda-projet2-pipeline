@@ -1,6 +1,7 @@
 import base64
 import os
 import re
+import shutil
 import subprocess
 
 ICI = os.path.dirname(os.path.abspath(__file__))
@@ -27,8 +28,35 @@ def capture(source, sortie, largeur, hauteur):
     print(sortie)
 
 
+def recadrer(image, geometrie):
+    subprocess.run(["convert", os.path.join(IMG, image), "-crop", geometrie,
+                    "+repage", os.path.join(IMG, image)], check=True)
+
+
+CAPTURES = os.path.join(ICI, "..", "captures")
+
+# Le dossier des captures du rapport reprend les diagrammes deja generes, sous
+# leur numero d'ordre. On recopie a chaque rendu, sinon les deux divergent.
+NUMEROTATION = {
+    "architecture.png": "01-architecture.png",
+    "datasets.png": "02-datasets.png",
+    "schema_etoile.png": "04-schema-etoile.png",
+}
+
+
+def alimenter_captures():
+    for source, cible in NUMEROTATION.items():
+        chemin = os.path.join(IMG, source)
+        if os.path.exists(chemin):
+            shutil.copyfile(chemin, os.path.join(CAPTURES, cible))
+            print(f"captures/{cible}")
+
+
 if __name__ == "__main__":
     capture("modele.html", "schema_etoile.png", 1200, 700)
-    subprocess.run(["convert", os.path.join(IMG, "schema_etoile.png"),
-                    "-crop", "1200x618+0+0", "+repage",
-                    os.path.join(IMG, "schema_etoile.png")], check=True)
+    recadrer("schema_etoile.png", "1200x640+0+0")
+
+    capture("datasets.html", "datasets.png", 1440, 620)
+    recadrer("datasets.png", "1440x497+0+0")
+
+    alimenter_captures()

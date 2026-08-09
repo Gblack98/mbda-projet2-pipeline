@@ -81,25 +81,33 @@ s2 = carte("Frankfurter · BCE", 40, y0 + 80, "bce.svg", sous="15 devises")
 s3 = carte("Banque Mondiale", 40, y0 + 160, "worldbank.svg", sous="exportations, 8 pays")
 
 # --- orchestration
-a1 = carte("Airflow", 300, y0 + 40, "airflow.svg", sous="DAG quotidien · 18h")
-a2 = carte("scripts/ingest.py", 300, y0 + 120, "python.svg", sous="sans ordonnanceur")
+a1 = carte("Airflow", 300, y0 + 40, "airflow.svg", sous="DAG manuel · 16 tâches")
+a2 = carte("scripts/ingest.py", 300, y0 + 120, "python.svg", sous="GitHub Actions · 18h37")
 
 # --- entrepot
-raw = bloc("raw", [("cotations", "103 071"), ("taux_change", "47 042"),
+raw = bloc("raw", [("cotations", "103 104"), ("taux_change", "47 040"),
                    ("instruments", "41"), ("devises", "16"),
                    ("exportations", "300"), ("secteurs", "11")],
            560, y0 + 20, "bigquery.svg", BLEU)
 
 # --- transformation
 d = bloc("dbt", [("staging", "6 vues"), ("normalisation", "USX GBp ZAc"),
-                 ("conversion", "→ EUR"), ("tests", "16")],
+                 ("conversion", "→ EUR"), ("agrégation", "6 tables"),
+                 ("tests", "68")],
          830, y0 + 55, "dbt.svg", "#C2410C")
 
 # --- marts
-marts = bloc("marts", [("fct_cotation_journaliere", ""), ("dim_temps", ""),
-                       ("dim_instrument", ""), ("dim_devise", ""),
-                       ("fct_exportations_pays", "")],
-             1100, y0 + 40, "bigquery.svg", VIOLET, w=230)
+marts = bloc("marts", [("fct_cotation_journaliere", "103 104"),
+                       ("fct_exportations_pays", "300"),
+                       ("dim_temps", "3 652"), ("dim_instrument", "41"),
+                       ("dim_devise", "16"),
+                       ("agg_volatilite_classe_annee", "33"),
+                       ("agg_tension_mensuelle", "121"),
+                       ("agg_correlation_instrument", "13"),
+                       ("agg_correlation_paire_annee", "143"),
+                       ("agg_exportations_evolution", "300"),
+                       ("kpi_instrument_annee", "451")],
+             1100, y0 - 10, "bigquery.svg", VIOLET, w=250)
 
 # --- restitution
 b1 = carte("Looker Studio", 1390, y0 + 55, "looker.svg", sous="connexion native")

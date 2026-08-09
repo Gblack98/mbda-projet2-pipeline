@@ -243,16 +243,16 @@ dans `mediane_historique`, le rapport à celle-ci dans `multiple_mediane`.
 
 | Mois | Volatilité | Hors anomalie | Tension |
 |---|---|---|---|
-| 2020-04 | 12,29 | 4,72 | oui |
-| 2020-03 | 7,19 | 7,19 | oui |
-| 2018-02 | 4,92 | 4,92 | non |
-| 2025-04 | 4,29 | 4,29 | non |
+| 2020-04 | 12,30 | 4,74 | oui |
+| 2020-03 | 7,17 | 7,17 | oui |
+| 2018-02 | 4,91 | 4,91 | non |
+| 2025-04 | 4,28 | 4,28 | non |
 
 Deux mois seulement dépassent le seuil, tous les deux au premier trimestre 2020.
-La médiane historique est à 2,36.
+La médiane historique est à 2,34.
 
 **Ce que dit vraiment le pic d'avril 2020.** Il tient à deux observations sur
-853, les deux séances du WTI à prix négatif. Sans elles le mois retombe à 4,72,
+853, les deux séances du WTI à prix négatif. Sans elles le mois retombe à 4,74,
 donc derrière mars 2020. Le mois le plus agité du krach est mars, pas avril.
 Avril est le mois de l'anomalie de prix. Les deux faits sont réels et méritent
 chacun une annotation, mais ce ne sont pas les mêmes.
@@ -262,8 +262,8 @@ mars et avril 2020.
 
 | Classe | Volatilité | Hors anomalie |
 |---|---|---|
-| Matières premières | 11,65 | 4,32 |
-| Actions | 7,44 | 7,44 |
+| Matières premières | 11,65 | 5,02 |
+| Actions | 7,43 | 7,43 |
 | Indices | 7,02 | 7,02 |
 
 Le classement s'inverse selon la colonne retenue : les matières premières sont
@@ -347,6 +347,14 @@ de graphiques. Écrire « Les monnaies arrimées affichent une volatilité nulle
 les flottantes jusqu'à 0,72 » plutôt que « Volatilité par devise ».
 
 ## Maquette
+
+Une maquette interactive complète, alimentée par les vraies données, est dans
+`docs/maquette/tableau-de-bord.html`. Elle s'ouvre par double-clic, sans serveur
+ni connexion. Les cinq pages y sont, avec les chiffres exacts à retrouver.
+
+`docs/maquette/README.md` donne la marche à suivre pour Power BI et Looker
+Studio, table par table et colonne par colonne, et
+`docs/maquette/theme-powerbi.json` applique la palette d'un coup.
 
 ![Maquette de la page 1](img/maquette_dashboard.png)
 
