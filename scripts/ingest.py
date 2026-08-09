@@ -1,3 +1,10 @@
+"""Ingestion complete sans ordonnanceur.
+
+Meme perimetre et memes controles que le DAG Airflow. C'est ce script que
+lance le workflow GitHub Actions, donc le chemin qui tourne en production :
+les controles de fin ne sont pas decoratifs, ils decident du code de sortie.
+"""
+
 import os
 import sys
 from datetime import datetime, timedelta, timezone
@@ -5,30 +12,47 @@ from datetime import datetime, timedelta, timezone
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "airflow", "dags"))
 
-from common import bigquery_io, config, frankfurter, worldbank, yahoo  # noqa: E402
+from common import (  # noqa: E402
+    bigquery_io, config, controles, frankfurter, worldbank, yahoo)
 
 CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
 bq = bigquery_io.client()
 bigquery_io.creer_dataset(bq)
 
-cotations = yahoo.recuperer(config.TICKERS, periode=config.PROFONDEUR)
-print(f"cotations : {bigquery_io.charger(bq, 'cotations', cotations)} lignes")
+volumes = {}
+
+
+def charger(table, lignes):
+    volumes[table] = bigquery_io.charger(bq, table, lignes)
+    print(f"{table} : {volumes[table]} lignes")
+    return lignes
+
+
+cotations = charger(
+    "cotations", yahoo.recuperer(config.TICKERS, periode=config.PROFONDEUR))
 
 debut = (datetime.now(timezone.utc)
          - timedelta(days=config.PROFONDEUR_JOURS)).strftime("%Y-%m-%d")
-taux = frankfurter.recuperer(config.DEVISES, debut)
-print(f"taux : {bigquery_io.charger(bq, 'taux_change', taux)} lignes")
+charger("taux_change", frankfurter.recuperer(config.DEVISES, debut))
 
-instruments = [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS]
-print(f"instruments : {bigquery_io.charger(bq, 'instruments', instruments)} lignes")
+charger("instruments",
+        [dict(zip(CHAMPS_INSTRUMENT, i)) for i in config.INSTRUMENTS])
+charger("devises", frankfurter.devises(config.DEVISES_DIMENSION))
+charger("exportations",
+        worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT))
+charger("secteurs",
+        [{"secteur": s, "categorie_export": c}
+         for s, c in config.CATEGORIE_EXPORT.items()])
 
-devises = frankfurter.devises(config.DEVISES_DIMENSION)
-print(f"devises : {bigquery_io.charger(bq, 'devises', devises)} lignes")
+vides = controles.tables_vides(volumes)
+if vides:
+    raise SystemExit(f"echec : tables vides : {', '.join(vides)}")
 
-exportations = worldbank.recuperer(config.PAYS, config.INDICATEURS_EXPORT)
-print(f"exportations : {bigquery_io.charger(bq, 'exportations', exportations)} lignes")
+manquants = controles.instruments_manquants(
+    {ligne["instrument_id"] for ligne in cotations}, config.TICKERS)
+if manquants:
+    raise SystemExit(
+        f"echec : {len(manquants)} instruments sans cotation : {', '.join(manquants)}")
 
-secteurs = [{"secteur": s, "categorie_export": c}
-            for s, c in config.CATEGORIE_EXPORT.items()]
-print(f"secteurs : {bigquery_io.charger(bq, 'secteurs', secteurs)} lignes")
+print(f"controles ok : {len(volumes)} tables, {len(config.TICKERS)} instruments cotes")

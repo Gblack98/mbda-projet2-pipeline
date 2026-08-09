@@ -181,37 +181,49 @@ définies dans le seed `paires_instrument`.
 
 | Paire | r |
 |---|---|
-| Newmont / Or | 0,623 |
-| Kinross / Or | 0,617 |
+| Barrick / Or | 0,655 |
+| Newmont / Or | 0,624 |
+| Kinross / Or | 0,618 |
 | Endeavour / Or | 0,546 |
 | Exxon / Brent | 0,534 |
 | BP / Brent | 0,528 |
-| Woodside / Brent | 0,503 |
+| Woodside / Brent | 0,504 |
 | Shell / Brent | 0,482 |
 | Glencore / Cuivre | 0,480 |
 | TotalEnergies / Brent | 0,471 |
 | Anglo American / Cuivre | 0,455 |
-| Barrick / Or | 0,215 |
 | Kosmos / Gaz | 0,087 |
 | **Orange / Or (témoin)** | **0,043** |
+
+Le classement se lit tout seul : les trois plus gros producteurs d'or occupent
+les trois premières places, les pétrolières suivent entre 0,47 et 0,53, les
+diversifiées du cuivre viennent après, et le témoin ferme la marche.
 
 Le témoin est ce qui rend la page convaincante. Orange n'a aucun rapport avec
 l'or, et sa corrélation est nulle : les 0,6 des sociétés minières ne sont donc
 pas un artefact. Un test dbt échoue si ce témoin dépasse 0,15, ce qui protège
 la démonstration d'une erreur de calcul introduite plus tard.
 
-Kosmos à 0,087 s'explique : la société exploite du gaz qui ne se vend pas au
-prix de la référence américaine.
+**Le cas Barrick mérite d'être raconté dans le rapport.** Une version
+précédente donnait Barrick à 0,215, en bas du tableau, et l'expliquait par la
+diversification de la société. C'était faux. Le découpage par année, table
+`agg_correlation_paire_annee`, montrait un coefficient bloqué autour de 0,1
+pendant six ans quand Kinross et Newmont tenaient 0,5 à 0,7 : un pur minier
+aurifère ne fait pas ça.
 
-**Barrick à 0,215 ne s'explique pas par la diversification.** Le découpage
-annuel, table `agg_correlation_paire_annee`, montre un coefficient autour de
-0,1 de 2016 à 2021, puis une montée jusqu'à 0,44, alors que Kinross et Newmont
-tiennent 0,5 à 0,7 sur toute la période. La série derrière le ticker `GOLD`
-fait par ailleurs des écarts de plus de 20 % en une séance, ce qu'aucune grande
-minière ne fait, et elle ne porte aucune trace de l'absorption de Randgold en
-janvier 2019, moment où ce symbole a changé de société. L'instrument étiqueté
-Barrick n'est probablement pas Barrick. Tant que ce n'est pas tranché, ne pas
-tirer de conclusion économique de cette ligne.
+En cause, le ticker. Barrick cotait sous `GOLD` jusqu'à son changement de nom
+en 2025, puis est passée à `B`. Le symbole `GOLD` a été repris par Gold.com,
+Inc., une autre société, et l'API renvoie l'historique de cette dernière. Le
+champ `longName` de Yahoo le dit noir sur blanc. Avec le bon ticker, Barrick
+passe de 0,215 à **0,655**, en tête du tableau, ce qui est la place attendue du
+deuxième producteur mondial.
+
+C'est un bon exemple à citer : la donnée était disponible, le pipeline
+fonctionnait, les tests passaient, et le chiffre était faux quand même. C'est
+la comparaison entre sociétés comparables qui a fait apparaître l'anomalie.
+
+Kosmos à 0,087 s'explique autrement, et cette fois vraiment : la société
+exploite du gaz qui ne se vend pas au prix de la référence américaine.
 
 **Mise en page** : une grille de six nuages de points côte à côte, même échelle
 partout, plutôt qu'un seul graphique avec un sélecteur.
