@@ -30,6 +30,7 @@ preparer ──────►┤                    ├──► controler_volu
                 │   secteurs         │    │  seed            │
                 │   exportations     │    │  run_staging     │
                 └────────────────────┘    │  run_marts       │
+                                          │  run_analytique  │
                                           │  test            │
                                           │  docs            │
                                           └──────────────────┘
@@ -39,9 +40,10 @@ preparer ──────►┤                    ├──► controler_volu
 ```
 
 Les sources sont séparées en deux groupes : `marches` pour ce qui change chaque
-jour, `referentiels` pour ce qui bouge rarement. `seed` charge la table de
-correspondance des devises, dont dépend `fct_cotation_journaliere`. `run_staging`
-et `run_marts` sont distincts pour repérer tout de suite quelle couche casse.
+jour, `referentiels` pour ce qui bouge rarement. `seed` charge la correspondance
+des devises, dont dépend `fct_cotation_journaliere`, et les paires société /
+matière première utilisées par les corrélations. `run_staging`, `run_marts` et
+`run_analytique` sont distincts pour repérer tout de suite quelle couche casse.
 `docs` produit la documentation navigable dans `dbt_pipeline/target/index.html`.
 
 Chaque source est chargée par sa propre tâche : une panne côté Banque Mondiale
@@ -77,6 +79,39 @@ Chaque exécution réécrit les tables entières (`WRITE_TRUNCATE`). Dix ans fon
 ![Modèle](img/schema_etoile.png)
 
 Grain de la table de faits : un instrument, un jour.
+
+## Couche décisionnelle
+
+`models/analytique/` porte les agrégations, les indicateurs et les comparaisons
+dans le temps. Six tables, matérialisées dans `marts` à côté du modèle en
+étoile pour que la restitution n'ait qu'un seul dataset à brancher.
+
+| Table | Grain | Contenu |
+|---|---|---|
+| `agg_volatilite_classe_annee` | classe × année | écart-type et amplitude des variations |
+| `agg_tension_mensuelle` | mois | dispersion mensuelle et seuil de tension |
+| `agg_correlation_instrument` | paire | corrélation société / matière première |
+| `agg_correlation_paire_annee` | paire × année | stabilité de cette corrélation |
+| `agg_exportations_evolution` | pays × catégorie × année | écart en points d'une année à l'autre |
+| `kpi_instrument_annee` | instrument × année | performance, volatilité, volume |
+
+Les paires comparées viennent du seed `paires_instrument`, qui marque la paire
+témoin Orange / Or. Un test singulier échoue si sa corrélation dépasse 0,15 :
+le témoin ne mesure aucun lien réel, s'il se met à corréler c'est le calcul qui
+est faux et les autres coefficients ne valent plus rien.
+
+Le calcul est fait ici plutôt que dans l'outil de restitution, pour trois
+raisons : les chiffres du rapport sont reproductibles, ils sont couverts par
+les tests dbt, et Looker comme Power BI lisent la même colonne au lieu de
+recalculer chacun sa formule.
+
+**Une convention à connaître.** `variation_pct` n'est un rendement que si les
+deux clôtures comparées sont de même signe. Le WTI a coté -37,63 le 20 avril
+2020, seule clôture négative de l'historique. La colonne `variation_exploitable`
+de `fct_cotation_journaliere` marque ces lignes, elles restent dans la table, et
+chaque agrégat publie `volatilite` avec et `volatilite_hors_anomalie` sans, plus
+`observations_ecartees` pour dire combien. L'écart n'est pas anecdotique : avril
+2020 passe de 12,29 à 4,72.
 
 ## À savoir
 

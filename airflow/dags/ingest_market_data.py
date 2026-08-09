@@ -124,17 +124,26 @@ def ingest_market_data():
         marts = BashOperator(
             task_id="run_marts",
             bash_command=f"{DBT} run --select path:models/marts")
+        analytique = BashOperator(
+            task_id="run_analytique",
+            bash_command=f"{DBT} run --select path:models/analytique")
         tests = BashOperator(task_id="test", bash_command=f"{DBT} test")
         docs = BashOperator(task_id="docs", bash_command=f"{DBT} docs generate")
-        deps >> seeds >> staging >> marts >> tests >> docs
+        deps >> seeds >> staging >> marts >> analytique >> tests >> docs
 
     @task
     def recapituler():
         bq = bigquery_io.client()
-        for table in ("fct_cotation_journaliere", "fct_exportations_pays",
-                      "dim_temps", "dim_instrument", "dim_devise"):
-            ref = bq.get_table(f"{config.PROJET}.marts.{table}")
-            print(f"marts.{table} : {ref.num_rows} lignes")
+        modele = ("fct_cotation_journaliere", "fct_exportations_pays",
+                  "dim_temps", "dim_instrument", "dim_devise")
+        analytique = ("agg_volatilite_classe_annee", "agg_tension_mensuelle",
+                      "agg_correlation_instrument", "agg_correlation_paire_annee",
+                      "agg_exportations_evolution", "kpi_instrument_annee")
+        for titre, tables in (("modele", modele), ("analytique", analytique)):
+            print(f"-- {titre}")
+            for table in tables:
+                ref = bq.get_table(f"{config.PROJET}.marts.{table}")
+                print(f"marts.{table} : {ref.num_rows} lignes")
 
     cotations, taux = marches()
     instruments, devises, secteurs, exportations = referentiels()

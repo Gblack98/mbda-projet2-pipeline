@@ -61,13 +61,24 @@ from cotations_mappees as c
 left join taux_complet as t
     on t.date_taux = c.date_cotation
     and t.devise_cible = c.devise_pivot
+),
+
+precedente as (
+select
+    *,
+    lag(cloture) over (
+        partition by instrument_id order by date_cotation
+    ) as cloture_precedente
+from with_variation
 )
 
 select
-    *,
-    round(
-        (cloture / nullif(lag(cloture) over (
-            partition by instrument_id order by date_cotation
-        ), 0) - 1) * 100
-    , 4) as variation_pct
-from with_variation
+    * except (cloture_precedente),
+    round((cloture / nullif(cloture_precedente, 0) - 1) * 100, 4) as variation_pct,
+    -- Une variation en pourcentage suppose deux clotures de meme signe. Le WTI
+    -- a cote -37,63 le 2020-04-20, seule cloture negative de l'historique : le
+    -- calcul sort -305 % ce jour-la puis -126 % le lendemain, ce qui n'est pas
+    -- un rendement. Les deux lignes restent dans la table, ce drapeau permet de
+    -- les compter et de les ecarter d'une moyenne ou d'un ecart-type.
+    coalesce(cloture > 0 and cloture_precedente > 0, false) as variation_exploitable
+from precedente
