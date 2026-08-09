@@ -38,7 +38,12 @@ INSTRUMENTS = [
     ("XOM", "Exxon Mobil", "Actions", "Hydrocarbures", "Integre"),
     ("KGC", "Kinross Gold", "Actions", "Mines", "Or"),
     ("EDV.TO", "Endeavour Mining", "Actions", "Mines", "Or"),
-    ("GOLD", "Barrick", "Actions", "Mines", "Or"),
+    # Barrick cote sous B depuis son changement de nom en 2025. Le symbole GOLD
+    # qu'elle utilisait avant a ete repris par Gold.com, Inc., une autre societe,
+    # et Yahoo sert l'historique de Gold.com sous ce symbole : correlation avec
+    # l'or de 0,215 contre 0,655 pour le vrai Barrick. Verifie le 2026-08-09 via
+    # le champ longName de l'API. Ne pas revenir a GOLD.
+    ("B", "Barrick", "Actions", "Mines", "Or"),
     ("NEM", "Newmont", "Actions", "Mines", "Or"),
     ("GLEN.L", "Glencore", "Actions", "Mines", "Diversifie"),
     ("AGL.JO", "Anglo American", "Actions", "Mines", "Diversifie"),

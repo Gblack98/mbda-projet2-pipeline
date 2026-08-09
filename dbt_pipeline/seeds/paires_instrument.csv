@@ -1,0 +1,14 @@
+paire_id,instrument_action,instrument_matiere,libelle,temoin
+kinross_or,KGC,GC=F,Kinross / Or,false
+newmont_or,NEM,GC=F,Newmont / Or,false
+endeavour_or,EDV.TO,GC=F,Endeavour / Or,false
+barrick_or,B,GC=F,Barrick / Or,false
+orange_or,ORA.PA,GC=F,Orange / Or,true
+exxon_brent,XOM,BZ=F,Exxon Mobil / Brent,false
+bp_brent,BP,BZ=F,BP / Brent,false
+woodside_brent,WDS,BZ=F,Woodside / Brent,false
+total_brent,TTE.PA,BZ=F,TotalEnergies / Brent,false
+shell_brent,SHEL.L,BZ=F,Shell / Brent,false
+kosmos_gaz,KOS,NG=F,Kosmos Energy / Gaz naturel,false
+glencore_cuivre,GLEN.L,HG=F,Glencore / Cuivre,false
+anglo_cuivre,AGL.JO,HG=F,Anglo American / Cuivre,false

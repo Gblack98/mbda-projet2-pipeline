@@ -1,13 +1,16 @@
 name: Pipeline quotidien
 
-# Declenchement manuel seulement. Le DAG Airflow tient le meme calendrier
-# (jours ouvres, 18h) et ecrit les memes tables en WRITE_TRUNCATE : deux
-# executions simultanees se marcheraient dessus. Pour rendre ce workflow
-# autonome, remettre le bloc schedule ci-dessous et desactiver le DAG.
+# Seul declencheur planifie du projet : il tourne sans machine allumee. Le DAG
+# Airflow couvre le meme perimetre mais reste en declenchement manuel, sinon
+# deux WRITE_TRUNCATE concurrents ecriraient les memes tables.
 #
-#   schedule:
-#     - cron: "0 18 * * 1-5"
+# 18h37 et non 18h00 : GitHub met les workflows planifies en file d'attente
+# quand la charge est forte, et la charge est maximale en debut d'heure. Une
+# execution du 2026-08-07 lancee a 18h59 n'a demarre que le lendemain a 11h09.
+# Une minute decalee reduit l'attente sans rien changer au calendrier.
 on:
+  schedule:
+    - cron: "37 18 * * 1-5"
   workflow_dispatch:
 
 jobs:

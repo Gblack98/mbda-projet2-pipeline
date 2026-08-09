@@ -99,3 +99,13 @@ models:
           - accepted_values:
               arguments:
                 values: ['USD', 'USX', 'EUR', 'GBp', 'GBP', 'ZAc', 'CAD', 'JPY']
+      - name: variation_exploitable
+        description: >
+          Faux quand variation_pct n'est pas interprétable comme un rendement,
+          c'est-à-dire au premier jour coté d'un instrument et dès qu'une des
+          deux clôtures comparées n'est pas strictement positive. Le seul cas
+          négatif de l'historique est le WTI le 2020-04-20. Les lignes restent
+          dans la table, la couche analytique s'en sert pour les compter et
+          publier une volatilité avec et sans.
+        tests:
+          - not_null

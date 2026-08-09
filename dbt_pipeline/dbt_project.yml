@@ -20,7 +20,15 @@ models:
       +schema: staging
     marts:
       +materialized: table
+    # Couche decisionnelle : agregations, indicateurs, comparaisons dans le
+    # temps. Materialisee dans marts, a cote du modele en etoile, pour que la
+    # restitution n'ait qu'un seul dataset a brancher.
+    analytique:
+      +materialized: table
 
 seeds:
   dbt_pipeline:
     +schema: staging
+    paires_instrument:
+      +column_types:
+        temoin: boolean
