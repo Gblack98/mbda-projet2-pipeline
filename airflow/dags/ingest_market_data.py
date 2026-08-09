@@ -15,7 +15,8 @@ except ImportError:
 RACINE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from common import alerte, bigquery_io, config, frankfurter, worldbank, yahoo  # noqa: E402
+from common import (  # noqa: E402
+    alerte, bigquery_io, config, controles, frankfurter, worldbank, yahoo)
 
 CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
@@ -26,7 +27,11 @@ DBT = f"cd {RACINE}/dbt_pipeline && {RACINE}/venv/bin/dbt"
 
 @dag(
     dag_id="ingest_market_data",
-    schedule="0 18 * * 1-5",
+    # Declenchement manuel. Le workflow GitHub Actions tient le calendrier
+    # (jours ouvres, 18h37) et tourne sans machine allumee ; ce DAG couvre le
+    # meme perimetre et sert a demontrer l'orchestration. Les deux planifies en
+    # meme temps ecriraient les memes tables en WRITE_TRUNCATE.
+    schedule=None,
     start_date=datetime(2026, 1, 1),
     catchup=False,
     default_args={
@@ -102,14 +107,12 @@ def ingest_market_data():
         for table, n in volumes.items():
             print(f"{table} : {n} lignes")
 
-        vides = [t for t, n in volumes.items() if not n]
+        vides = controles.tables_vides(volumes)
         if vides:
             raise ValueError(f"tables vides : {', '.join(vides)}")
 
-        # yahoo.recuperer ignore les tickers qui echouent et ne leve que si les
-        # 41 tombent. Sans ce controle, une collecte reduite a un seul
-        # instrument passerait au vert.
-        manquants = sorted(set(config.TICKERS) - set(cotations["instruments"]))
+        manquants = controles.instruments_manquants(
+            cotations["instruments"], config.TICKERS)
         if manquants:
             raise ValueError(
                 f"{len(manquants)} instruments sans cotation : {', '.join(manquants)}")
@@ -124,17 +127,26 @@ def ingest_market_data():
         marts = BashOperator(
             task_id="run_marts",
             bash_command=f"{DBT} run --select path:models/marts")
+        analytique = BashOperator(
+            task_id="run_analytique",
+            bash_command=f"{DBT} run --select path:models/analytique")
         tests = BashOperator(task_id="test", bash_command=f"{DBT} test")
         docs = BashOperator(task_id="docs", bash_command=f"{DBT} docs generate")
-        deps >> seeds >> staging >> marts >> tests >> docs
+        deps >> seeds >> staging >> marts >> analytique >> tests >> docs
 
     @task
     def recapituler():
         bq = bigquery_io.client()
-        for table in ("fct_cotation_journaliere", "fct_exportations_pays",
-                      "dim_temps", "dim_instrument", "dim_devise"):
-            ref = bq.get_table(f"{config.PROJET}.marts.{table}")
-            print(f"marts.{table} : {ref.num_rows} lignes")
+        modele = ("fct_cotation_journaliere", "fct_exportations_pays",
+                  "dim_temps", "dim_instrument", "dim_devise")
+        analytique = ("agg_volatilite_classe_annee", "agg_tension_mensuelle",
+                      "agg_correlation_instrument", "agg_correlation_paire_annee",
+                      "agg_exportations_evolution", "kpi_instrument_annee")
+        for titre, tables in (("modele", modele), ("analytique", analytique)):
+            print(f"-- {titre}")
+            for table in tables:
+                ref = bq.get_table(f"{config.PROJET}.marts.{table}")
+                print(f"marts.{table} : {ref.num_rows} lignes")
 
     cotations, taux = marches()
     instruments, devises, secteurs, exportations = referentiels()

@@ -7,6 +7,30 @@ la page dit vrai.
 Toutes les données viennent du dataset `marts`. Ne jamais brancher un rapport sur
 `marts_staging`, qui ne sert qu'à dbt.
 
+Les agrégations sont calculées par le pipeline, pas dans l'outil de restitution.
+Six tables portent les indicateurs, à brancher telles quelles :
+
+| Table | Grain | Question |
+|---|---|---|
+| `agg_volatilite_classe_annee` | classe d'actif × année | 2 |
+| `agg_tension_mensuelle` | mois | 5 |
+| `agg_correlation_instrument` | paire société / matière | 4 |
+| `agg_correlation_paire_annee` | paire × année | 4 |
+| `agg_exportations_evolution` | pays × catégorie × année | 3 |
+| `kpi_instrument_annee` | instrument × année | 2 et 5 |
+
+Recalculer un écart-type à la main dans Looker ou Power BI donnera un chiffre
+différent de celui du rapport. Prendre la colonne déjà calculée.
+
+**Une convention à connaître avant de lire un chiffre.** `variation_pct` est un
+rendement, et un rendement suppose deux clôtures de même signe. Le WTI a coté
+-37,63 le 20 avril 2020, seule clôture négative de l'historique : le calcul sort
+alors -306 % puis -127 %, deux valeurs qui ne sont pas des rendements. Ces lignes
+restent dans les données, marquées par `variation_exploitable` à faux, et chaque
+table d'agrégation publie deux colonnes : `volatilite` qui les inclut, et
+`volatilite_hors_anomalie` qui les écarte. `observations_ecartees` dit combien il
+y en avait. Toujours préciser laquelle des deux est citée.
+
 ---
 
 ## Palette commune
@@ -68,13 +92,13 @@ naturellement, et l'écart entre 0,00 et 0,72 saute aux yeux.
 
 ## 2. Quelle classe d'actif est la plus volatile ?
 
-**Données** : `fct_cotation_journaliere` × `dim_instrument` × `dim_temps`
+**Données** : `agg_volatilite_classe_annee`, une ligne par classe et par année.
 
 | Colonne | Rôle |
 |---|---|
-| `dim_temps.annee` | axe des abscisses |
-| `dim_instrument.classe_actif` | série |
-| `écart-type de variation_pct` | métrique |
+| `annee` | axe des abscisses |
+| `classe_actif` | série |
+| `volatilite` | métrique |
 
 **Graphique** : courbes, une par classe d'actif, sur dix ans.
 
@@ -87,10 +111,17 @@ en bout de ligne plutôt que par une légende séparée.
 
 **Le piège** : la volatilité se calcule sur `variation_pct`, jamais sur
 `cloture_eur`. Un écart-type des prix comparerait Kosmos à 2 € et Anglo American
-à 800 €, ce qui n'a aucun sens.
+à 800 €, ce qui n'a aucun sens. La colonne `volatilite` applique déjà cette
+règle, il n'y a pas de champ calculé à créer.
 
-Dans Looker Studio, créer un champ calculé : `STDDEV(variation_pct)`.
-Dans Power BI : `ECARTYPE.PARTITION(fct[variation_pct])`.
+**L'année 2020 demande une phrase d'explication.** Les matières premières y sont
+à 5,21, devant les indices à 4,64 et les actions à 4,23. Mais deux observations
+sur 5 819 portent tout l'écart, les deux séances du WTI à prix négatif : sans
+elles la classe retombe à 2,88 et passe dernière. Citer les deux chiffres, la
+colonne `volatilite_hors_anomalie` donne le second.
+
+`kpi_instrument_annee` permet de descendre au niveau de l'instrument si un jury
+demande quel actif porte la volatilité d'une classe.
 
 ---
 
@@ -123,6 +154,16 @@ par `categorie_export`, présent des deux côtés.
 
 Ajouter un filtre sur `annee` pour montrer l'évolution 2015-2024.
 
+Pour la comparaison dans le temps, prendre `agg_exportations_evolution` plutôt
+que la table de faits : elle porte `ecart_points`, l'écart avec l'année
+précédente, et `annee_precedente`, qui dit sur quelle année porte la
+comparaison. La Banque Mondiale laisse des trous selon les pays, l'année
+précédente n'est donc pas toujours celle d'avant. `est_categorie_dominante`
+évite de recalculer le classement dans l'outil.
+
+`part_exportations` est déjà un pourcentage : un écart se lit **en points**, pas
+en pourcentage. Écrire « l'énergie gagne 4,2 points » et non « gagne 4,2 % ».
+
 ---
 
 ## 4. Les sociétés extractives suivent-elles leur matière ?
@@ -135,25 +176,54 @@ variation de la matière en ordonnée. Un point par jour.
 Ajouter une droite de tendance. Plus les points s'alignent, plus la société suit
 son sous-jacent.
 
-**Corrélations mesurées sur 2 500 jours**
+**Corrélations mesurées**, table `agg_correlation_instrument`, treize paires
+définies dans le seed `paires_instrument`.
 
 | Paire | r |
 |---|---|
-| Kinross / Or | 0,616 |
-| Endeavour / Or | 0,545 |
+| Barrick / Or | 0,655 |
+| Newmont / Or | 0,624 |
+| Kinross / Or | 0,618 |
+| Endeavour / Or | 0,546 |
 | Exxon / Brent | 0,534 |
-| BP / Brent | 0,529 |
+| BP / Brent | 0,528 |
 | Woodside / Brent | 0,504 |
-| Barrick / Or | 0,214 |
+| Shell / Brent | 0,482 |
+| Glencore / Cuivre | 0,480 |
+| TotalEnergies / Brent | 0,471 |
+| Anglo American / Cuivre | 0,455 |
 | Kosmos / Gaz | 0,087 |
 | **Orange / Or (témoin)** | **0,043** |
 
+Le classement se lit tout seul : les trois plus gros producteurs d'or occupent
+les trois premières places, les pétrolières suivent entre 0,47 et 0,53, les
+diversifiées du cuivre viennent après, et le témoin ferme la marche.
+
 Le témoin est ce qui rend la page convaincante. Orange n'a aucun rapport avec
 l'or, et sa corrélation est nulle : les 0,6 des sociétés minières ne sont donc
-pas un artefact.
+pas un artefact. Un test dbt échoue si ce témoin dépasse 0,15, ce qui protège
+la démonstration d'une erreur de calcul introduite plus tard.
 
-Deux cas méritent un commentaire : Barrick est diversifiée au-delà de l'or, et
-Kosmos exploite du gaz qui n'est pas coté sur la référence américaine.
+**Le cas Barrick mérite d'être raconté dans le rapport.** Une version
+précédente donnait Barrick à 0,215, en bas du tableau, et l'expliquait par la
+diversification de la société. C'était faux. Le découpage par année, table
+`agg_correlation_paire_annee`, montrait un coefficient bloqué autour de 0,1
+pendant six ans quand Kinross et Newmont tenaient 0,5 à 0,7 : un pur minier
+aurifère ne fait pas ça.
+
+En cause, le ticker. Barrick cotait sous `GOLD` jusqu'à son changement de nom
+en 2025, puis est passée à `B`. Le symbole `GOLD` a été repris par Gold.com,
+Inc., une autre société, et l'API renvoie l'historique de cette dernière. Le
+champ `longName` de Yahoo le dit noir sur blanc. Avec le bon ticker, Barrick
+passe de 0,215 à **0,655**, en tête du tableau, ce qui est la place attendue du
+deuxième producteur mondial.
+
+C'est un bon exemple à citer : la donnée était disponible, le pipeline
+fonctionnait, les tests passaient, et le chiffre était faux quand même. C'est
+la comparaison entre sociétés comparables qui a fait apparaître l'anomalie.
+
+Kosmos à 0,087 s'explique autrement, et cette fois vraiment : la société
+exploite du gaz qui ne se vend pas au prix de la référence américaine.
 
 **Mise en page** : une grille de six nuages de points côte à côte, même échelle
 partout, plutôt qu'un seul graphique avec un sélecteur.
@@ -162,32 +232,43 @@ partout, plutôt qu'un seul graphique avec un sélecteur.
 
 ## 5. Quelles ont été les périodes de tension ?
 
-**Données** : `fct_cotation_journaliere` × `dim_temps`
+**Données** : `agg_tension_mensuelle`, une ligne par mois.
 
-**Graphique** : histogramme mensuel de l'écart-type des variations, sur dix ans.
-Une seule série, en `#2a78d6`. Colorer en `#e34948` les mois qui dépassent trois
-fois la médiane.
+**Graphique** : histogramme mensuel de `volatilite`, sur dix ans. Une seule
+série, en `#2a78d6`. Colorer en `#e34948` les mois où `est_tension` vaut vrai,
+c'est-à-dire au-delà de trois fois la médiane des mois observés. La médiane est
+dans `mediane_historique`, le rapport à celle-ci dans `multiple_mediane`.
 
 **Résultats**
 
-| Mois | Volatilité |
-|---|---|
-| 2020-04 | 12,29 |
-| 2020-03 | 7,19 |
-| 2018-02 | 4,92 |
-| 2025-04 | 4,29 |
+| Mois | Volatilité | Hors anomalie | Tension |
+|---|---|---|---|
+| 2020-04 | 12,29 | 4,72 | oui |
+| 2020-03 | 7,19 | 7,19 | oui |
+| 2018-02 | 4,92 | 4,92 | non |
+| 2025-04 | 4,29 | 4,29 | non |
 
-Le pic d'avril 2020 est le krach du Covid. Le nommer dans une annotation : ça
-prouve que les données décrivent le monde réel.
+Deux mois seulement dépassent le seuil, tous les deux au premier trimestre 2020.
+La médiane historique est à 2,36.
+
+**Ce que dit vraiment le pic d'avril 2020.** Il tient à deux observations sur
+853, les deux séances du WTI à prix négatif. Sans elles le mois retombe à 4,72,
+donc derrière mars 2020. Le mois le plus agité du krach est mars, pas avril.
+Avril est le mois de l'anomalie de prix. Les deux faits sont réels et méritent
+chacun une annotation, mais ce ne sont pas les mêmes.
 
 Sous le graphique, un second visuel : la volatilité par classe d'actif pendant
 mars et avril 2020.
 
-| Classe | Volatilité |
-|---|---|
-| Actions | 6,90 |
-| Indices | 6,72 |
-| Matières premières | 4,35 |
+| Classe | Volatilité | Hors anomalie |
+|---|---|---|
+| Matières premières | 11,65 | 4,32 |
+| Actions | 7,44 | 7,44 |
+| Indices | 7,02 | 7,02 |
+
+Le classement s'inverse selon la colonne retenue : les matières premières sont
+soit la classe la plus agitée, soit la plus calme. Dire laquelle des deux
+colonnes est affichée, sinon le graphique se contredit d'une lecture à l'autre.
 
 ---
 
