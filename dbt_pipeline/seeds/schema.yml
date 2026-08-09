@@ -20,3 +20,32 @@ seeds:
       - name: facteur
         tests:
           - not_null
+
+  - name: paires_instrument
+    description: >
+      Paires société / matière première comparées par les modèles de
+      corrélation. temoin marque la paire de contrôle, Orange / Or, qui ne
+      correspond à aucun lien économique et dont le coefficient doit rester
+      proche de zéro.
+    columns:
+      - name: paire_id
+        tests:
+          - unique
+          - not_null
+      - name: instrument_action
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_instruments')
+                field: instrument_id
+      - name: instrument_matiere
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_instruments')
+                field: instrument_id
+      - name: temoin
+        tests:
+          - not_null

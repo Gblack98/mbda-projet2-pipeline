@@ -1,0 +1,146 @@
+version: 2
+models:
+  - name: agg_volatilite_classe_annee
+    description: >
+      Volatilité par classe d'actif et par année. Grain classe x année.
+      volatilite est l'écart-type d'échantillon de variation_pct sur toutes
+      les observations, c'est la valeur qui reproduit les chiffres publiés.
+      volatilite_hors_anomalie écarte les variations calculées à cheval sur
+      un changement de signe du prix, et observations_ecartees dit combien
+      il y en avait.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [classe_actif, annee]
+    columns:
+      - name: classe_actif
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_instrument')
+                field: classe_actif
+      - name: annee
+        tests:
+          - not_null
+      - name: volatilite
+        tests:
+          - not_null
+      - name: observations
+        tests:
+          - not_null
+
+  - name: agg_tension_mensuelle
+    description: >
+      Dispersion mensuelle des variations quotidiennes, tous instruments
+      confondus, et repérage des périodes de tension. Grain mois. Le seuil
+      est relatif : est_tension vaut vrai au-delà de trois fois la médiane
+      des mois observés, il suit donc les données quand elles s'allongent.
+    columns:
+      - name: mois
+        tests:
+          - unique
+          - not_null
+      - name: volatilite
+        tests:
+          - not_null
+      - name: est_tension
+        tests:
+          - not_null
+
+  - name: agg_correlation_instrument
+    description: >
+      Corrélation de Pearson entre les variations quotidiennes d'une société
+      et celles de sa matière première, sur les seules séances où les deux ont
+      coté. La paire témoin Orange / Or doit rester proche de zéro : c'est
+      elle qui valide la méthode, un test singulier le vérifie.
+    columns:
+      - name: paire_id
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('paires_instrument')
+                field: paire_id
+      - name: correlation
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: -1
+              max_value: 1
+              inclusive: true
+      - name: jours_communs
+        tests:
+          - not_null
+
+  - name: agg_correlation_paire_annee
+    description: >
+      La même corrélation découpée par année. Sert de contrôle de stabilité :
+      une paire dont le coefficient dérive d'une année sur l'autre signale un
+      changement d'activité de la société, ou un problème de série.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [paire_id, annee]
+    columns:
+      - name: paire_id
+        tests:
+          - not_null
+      - name: annee
+        tests:
+          - not_null
+      - name: correlation
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -1
+              max_value: 1
+              inclusive: true
+
+  - name: agg_exportations_evolution
+    description: >
+      Part de chaque catégorie dans les exportations d'un pays, avec le
+      classement de l'année et l'écart avec l'année précédente présente dans
+      les données. Les écarts se lisent en points, part_exportations étant
+      déjà un pourcentage.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [pays, annee, categorie_export]
+    columns:
+      - name: pays
+        tests:
+          - not_null
+      - name: annee
+        tests:
+          - not_null
+      - name: categorie_export
+        tests:
+          - not_null
+      - name: rang_categorie
+        tests:
+          - not_null
+
+  - name: kpi_instrument_annee
+    description: >
+      Indicateurs annuels par instrument : performance en devise de cotation
+      et en euros, volatilité, amplitude moyenne, volume moyen, et écart de
+      performance avec l'année précédente. annee_complete distingue les
+      années pleines de l'année en cours, forcément tronquée.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [instrument_id, annee]
+    columns:
+      - name: instrument_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_instrument')
+                field: instrument_id
+      - name: annee
+        tests:
+          - not_null
+      - name: jours_cotes
+        tests:
+          - not_null
+      - name: annee_complete
+        tests:
+          - not_null
