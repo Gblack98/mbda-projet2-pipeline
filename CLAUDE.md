@@ -86,7 +86,7 @@ Oracle Cloud demande une carte. La consigne n'exige aucun hébergement.
   seul cas de l'historique. `variation_pct` sort alors -306 %, ce qui n'est pas
   un rendement. La colonne `variation_exploitable` marque ces lignes ; elles
   restent dans la table et chaque agrégat publie une valeur avec et une sans.
-  L'écart n'est pas anecdotique : avril 2020 passe de 12,29 à 4,72.
+  L'écart n'est pas anecdotique : avril 2020 passe de 12,30 à 4,74.
 - **Le MRU n'existe que depuis janvier 2018.** Un filtre exigeant toutes les
   devises écartait 43 % de l'historique. `raw` reste une copie fidèle, le
   filtrage appartient à dbt.
