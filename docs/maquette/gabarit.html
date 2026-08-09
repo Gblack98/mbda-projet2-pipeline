@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableau de bord — matières premières et devises</title>
+<style>
+:root{
+  --bleu:#2a78d6; --orange:#eb6834; --vert:#1baf7a; --jaune:#eda100;
+  --gris:#94a3b8; --alerte:#e34948;
+  --encre:#1a1a19; --encre2:#5a6b64; --encre3:#93a29c;
+  --fond:#f1f3f5; --carte:#ffffff; --trait:#e2e8f0; --trait2:#eef2f6;
+  --rayon:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  background:var(--fond); color:var(--encre);
+  display:flex; min-height:100vh; font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- navigation laterale ---------- */
+nav{
+  width:232px; flex:0 0 232px; background:var(--carte);
+  border-right:1px solid var(--trait); padding:20px 0;
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+}
+nav .marque{padding:0 20px 18px; border-bottom:1px solid var(--trait2)}
+nav .marque b{display:block; font-size:14px; letter-spacing:-.01em}
+nav .marque span{display:block; font-size:11.5px; color:var(--encre3); margin-top:2px}
+nav ul{list-style:none; padding:14px 12px; flex:1}
+nav li{margin-bottom:2px}
+nav button{
+  width:100%; text-align:left; background:none; border:0; cursor:pointer;
+  font:inherit; font-size:13px; color:var(--encre2);
+  padding:9px 12px; border-radius:7px; display:flex; gap:10px; align-items:baseline;
+}
+nav button:hover{background:#f6f8fa; color:var(--encre)}
+nav button[aria-current="page"]{background:#eaf2fd; color:var(--bleu); font-weight:600}
+nav button i{font-style:normal; font-size:11px; opacity:.6; font-variant-numeric:tabular-nums}
+nav .pied{padding:14px 20px 0; border-top:1px solid var(--trait2);
+          font-size:11px; color:var(--encre3); line-height:1.5}
+
+/* ---------- page ---------- */
+main{flex:1; padding:26px 30px 40px; max-width:1500px}
+.entete{margin-bottom:18px}
+.entete h1{font-size:21px; font-weight:650; letter-spacing:-.02em}
+.entete p{font-size:14px; color:var(--encre2); margin-top:5px; max-width:75ch}
+
+/* ---------- filtres ---------- */
+.filtres{
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  background:var(--carte); border:1px solid var(--trait); border-radius:var(--rayon);
+  padding:10px 14px; margin-bottom:16px;
+}
+.filtres label{font-size:12px; color:var(--encre2); font-weight:600}
+.filtres select,.filtres input[type=range]{font:inherit; font-size:12.5px}
+.filtres select{
+  border:1px solid var(--trait); border-radius:6px; padding:5px 9px;
+  background:var(--carte); color:var(--encre); cursor:pointer;
+}
+.bascule{display:flex; border:1px solid var(--trait); border-radius:6px; overflow:hidden}
+.bascule button{
+  font:inherit; font-size:12px; border:0; background:var(--carte); cursor:pointer;
+  padding:5px 11px; color:var(--encre2);
+}
+.bascule button+button{border-left:1px solid var(--trait)}
+.bascule button[aria-pressed="true"]{background:var(--bleu); color:#fff; font-weight:600}
+.filtres .note{font-size:11.5px; color:var(--encre3); margin-left:auto}
+
+/* ---------- tuiles ---------- */
+.tuiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+        gap:12px; margin-bottom:16px}
+.tuile{background:var(--carte); border:1px solid var(--trait); border-radius:var(--rayon);
+       padding:14px 16px}
+.tuile .intitule{font-size:11.5px; color:var(--encre2); font-weight:600;
+                 text-transform:uppercase; letter-spacing:.04em}
+.tuile .valeur{font-size:31px; font-weight:650; letter-spacing:-.03em; margin-top:6px;
+               line-height:1.05}
+.tuile .detail{font-size:11.5px; color:var(--encre3); margin-top:4px}
+.tuile.accent .valeur{color:var(--bleu)}
+.tuile.temoin .valeur{color:var(--gris)}
+.tuile.chaud .valeur{color:var(--orange)}
+
+/* ---------- cartes graphiques ---------- */
+.grille{display:grid; gap:14px}
+.g2{grid-template-columns:1.55fr 1fr}
+@media(max-width:1180px){.g2{grid-template-columns:1fr}}
+.carte{background:var(--carte); border:1px solid var(--trait);
+       border-radius:var(--rayon); padding:15px 17px 17px; min-width:0}
+.carte header{display:flex; justify-content:space-between; align-items:baseline;
+              gap:12px; margin-bottom:3px}
+.carte h2{font-size:14px; font-weight:650}
+.carte .soustitre{font-size:12px; color:var(--encre2); margin-bottom:12px}
+.carte .zone{overflow-x:auto}
+.lien{background:none; border:0; font:inherit; font-size:11.5px; color:var(--bleu);
+      cursor:pointer; padding:2px 4px; border-radius:4px; white-space:nowrap}
+.lien:hover{background:#eaf2fd}
+
+/* ---------- legende ---------- */
+.legende{display:flex; gap:16px; flex-wrap:wrap; margin:10px 0 2px; font-size:12px;
+         color:var(--encre2)}
+.legende span{display:flex; align-items:center; gap:6px}
+.legende i{width:11px; height:11px; border-radius:3px; display:inline-block; flex:0 0 auto}
+
+/* ---------- svg ---------- */
+svg{display:block; overflow:visible}
+svg text{font-family:inherit; fill:var(--encre2)}
+.axe{font-size:11px; fill:var(--encre3)}
+.axe-ligne{stroke:var(--trait); stroke-width:1}
+.grille-ligne{stroke:var(--trait2); stroke-width:1}
+.etiq-directe{font-size:11.5px; font-weight:600; fill:var(--encre)}
+.val-num{font-variant-numeric:tabular-nums}
+
+/* ---------- tableau ---------- */
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+th,td{text-align:left; padding:6px 10px; border-bottom:1px solid var(--trait2)}
+th{font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+   color:var(--encre2); font-weight:650}
+td.n,th.n{text-align:right; font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#f8fafc}
+.masque{display:none}
+
+/* ---------- infobulle ---------- */
+#bulle{
+  position:fixed; pointer-events:none; z-index:50; opacity:0; transition:opacity .1s;
+  background:#1f2937; color:#fff; border-radius:7px; padding:8px 11px;
+  font-size:12px; line-height:1.5; box-shadow:0 6px 18px rgba(0,0,0,.22);
+  max-width:250px;
+}
+#bulle b{font-weight:650}
+#bulle .cle{color:#cbd5e1}
+#bulle .v{font-variant-numeric:tabular-nums; font-weight:600}
+
+.page{display:none}
+.page.active{display:block}
+.avert{background:#fff8ec; border:1px solid #f5dcb0; border-radius:var(--rayon);
+       padding:11px 14px; font-size:12.5px; color:#7a5620; margin-bottom:14px}
+.avert b{color:#5c3f16}
+</style>
+</head>
+<body data-palette="#2a78d6,#eb6834,#1baf7a,#eda100" data-mode="light" data-surface="#ffffff">
+
+<nav>
+  <div class="marque">
+    <b>Matières premières et devises</b>
+    <span>Master 1 MBDA · UN-CHK · 2026</span>
+  </div>
+  <ul id="menu"></ul>
+  <div class="pied">
+    Maquette de référence.<br>
+    Données réelles du dataset <code>marts</code>.
+  </div>
+</nav>
+
+<main>
+  <section class="page active" id="p1"></section>
+  <section class="page" id="p2"></section>
+  <section class="page" id="p3"></section>
+  <section class="page" id="p4"></section>
+  <section class="page" id="p5"></section>
+</main>
+
+<div id="bulle" role="status"></div>
+
+<script>
+const DONNEES = {};
+</script>
+
+<script>
+/* =======================================================================
+   Petite bibliotheque SVG. Aucune dependance : la maquette doit s'ouvrir
+   par double-clic, sans serveur et sans reseau.
+   ======================================================================= */
+const NS = "http://www.w3.org/2000/svg";
+const PALETTE = { bleu:"#2a78d6", orange:"#eb6834", vert:"#1baf7a",
+                  jaune:"#eda100", gris:"#94a3b8", alerte:"#e34948" };
+const SERIES = [PALETTE.bleu, PALETTE.orange, PALETTE.vert, PALETTE.jaune];
+
+const el = (t, a = {}, p) => { const n = document.createElementNS(NS, t);
+  for (const k in a) n.setAttribute(k, a[k]); if (p) p.appendChild(n); return n; };
+const nb = (v, d = 2) => v == null ? "—"
+  : v.toLocaleString("fr-FR", { minimumFractionDigits:d, maximumFractionDigits:d });
+
+const bulle = document.getElementById("bulle");
+function montrer(evt, html) {
+  bulle.innerHTML = html; bulle.style.opacity = 1;
+  const r = bulle.getBoundingClientRect();
+  let x = evt.clientX + 14, y = evt.clientY - r.height - 10;
+  if (x + r.width > innerWidth - 8) x = evt.clientX - r.width - 14;
+  if (y < 8) y = evt.clientY + 18;
+  bulle.style.left = x + "px"; bulle.style.top = y + "px";
+}
+const cacher = () => bulle.style.opacity = 0;
+
+/* Zone de survol confortable : le mark seul est trop petit (24 px minimum). */
+function survol(cible, html, zone) {
+  const h = (e) => montrer(e, typeof html === "function" ? html() : html);
+  (zone || cible).addEventListener("mousemove", h);
+  (zone || cible).addEventListener("mouseleave", cacher);
+  (zone || cible).style.cursor = "default";
+}
+
+/* ---------- barres horizontales ---------- */
+function barresH(hote, lignes, opts = {}) {
+  const { largeur = 620, hauteurBarre = 24, ecart = 9, marge = 168,
+          format = (v) => nb(v, 3), max: maxForce } = opts;
+  const h = lignes.length * (hauteurBarre + ecart) + 26;
+  const svg = el("svg", { width:"100%", viewBox:`0 0 ${largeur} ${h}`,
+                          role:"img" }, hote);
+  const max = maxForce || Math.max(...lignes.map(l => Math.abs(l.valeur))) * 1.16 || 1;
+  const dispo = largeur - marge - 58;
+
+  lignes.forEach((l, i) => {
+    const y = i * (hauteurBarre + ecart);
+    const w = Math.max(2, Math.abs(l.valeur) / max * dispo);
+    el("text", { x: marge - 10, y: y + hauteurBarre / 2 + 4,
+                 "text-anchor":"end", class:"axe",
+                 style:"font-size:12px;fill:var(--encre2)" }, svg)
+      .textContent = l.libelle;
+    const r = el("rect", { x: marge, y, width: w, height: hauteurBarre, rx: 4,
+                           fill: l.couleur || SERIES[0] }, svg);
+    el("text", { x: marge + w + 8, y: y + hauteurBarre / 2 + 4,
+                 class:"etiq-directe val-num" }, svg).textContent = format(l.valeur);
+    /* zone de survol sur toute la ligne, pas seulement sur la barre */
+    const z = el("rect", { x:0, y, width: largeur, height: hauteurBarre,
+                           fill:"transparent" }, svg);
+    survol(r, () => `<b>${l.libelle}</b><br>${l.info ||
+      `<span class="cle">valeur</span> <span class="v">${format(l.valeur)}</span>`}`, z);
+  });
+  return svg;
+}
+
+/* ---------- barres empilees horizontales ---------- */
+function empileesH(hote, groupes, cles, couleurs, opts = {}) {
+  const { largeur = 640, hauteurBarre = 26, ecart = 12, marge = 118 } = opts;
+  const h = groupes.length * (hauteurBarre + ecart) + 24;
+  const svg = el("svg", { width:"100%", viewBox:`0 0 ${largeur} ${h}` }, hote);
+  const dispo = largeur - marge - 66;
+  const max = Math.max(...groupes.map(g => cles.reduce((s, k) => s + (g[k] || 0), 0))) * 1.06 || 1;
+
+  groupes.forEach((g, i) => {
+    const y = i * (hauteurBarre + ecart);
+    el("text", { x: marge - 10, y: y + hauteurBarre / 2 + 4, "text-anchor":"end",
+                 style:"font-size:12px;fill:var(--encre2)" }, svg).textContent = g.libelle;
+    let x = marge, total = 0;
+    cles.forEach((k, j) => {
+      const v = g[k] || 0; if (v <= 0) return;
+      const w = v / max * dispo; total += v;
+      /* 2 px de fond entre segments, pas de bordure */
+      const r = el("rect", { x, y, width: Math.max(1, w - 2), height: hauteurBarre,
+                             rx: j === 0 ? 4 : 0, fill: couleurs[j] }, svg);
+      survol(r, `<b>${g.libelle}</b> · ${k}<br><span class="v">${nb(v, 1)} %</span> des exportations`);
+      /* etiquette dans le segment seulement si elle tient */
+      if (w > 46) el("text", { x: x + w / 2 - 1, y: y + hauteurBarre / 2 + 4,
+                               "text-anchor":"middle", class:"val-num",
+                               style:"font-size:11px;fill:#fff;font-weight:600" }, svg)
+        .textContent = nb(v, 1);
+      x += w;
+    });
+    el("text", { x: x + 8, y: y + hauteurBarre / 2 + 4, class:"etiq-directe val-num" },
+       svg).textContent = nb(total, 1) + " %";
+  });
+  return svg;
+}
+
+/* ---------- courbes multiples ---------- */
+function courbes(hote, series, opts = {}) {
+  const { largeur = 760, hauteur = 300, mg = { h:44, b:34, g:44, d:132 },
+          suffixe = "", format = (v) => nb(v, 2) } = opts;
+  const svg = el("svg", { width:"100%", viewBox:`0 0 ${largeur} ${hauteur}` }, hote);
+  const xs = [...new Set(series.flatMap(s => s.points.map(p => p.x)))].sort((a, b) => a - b);
+  const ys = series.flatMap(s => s.points.map(p => p.y));
+  const ymax = Math.max(...ys) * 1.12, ymin = 0;
+  const px = (x) => mg.g + (xs.indexOf(x)) / Math.max(1, xs.length - 1) * (largeur - mg.g - mg.d);
+  const py = (y) => hauteur - mg.b - (y - ymin) / (ymax - ymin) * (hauteur - mg.h - mg.b);
+
+  for (let i = 0; i <= 4; i++) {
+    const v = ymin + (ymax - ymin) * i / 4, y = py(v);
+    el("line", { x1: mg.g, x2: largeur - mg.d, y1: y, y2: y, class:"grille-ligne" }, svg);
+    el("text", { x: mg.g - 9, y: y + 4, "text-anchor":"end", class:"axe val-num" }, svg)
+      .textContent = nb(v, 1);
+  }
+  xs.forEach((x, i) => {
+    if (xs.length > 8 && i % 2) return;
+    el("text", { x: px(x), y: hauteur - mg.b + 17, "text-anchor":"middle", class:"axe val-num" },
+       svg).textContent = x;
+  });
+
+  series.forEach((s) => {
+    const d = s.points.map((p, i) => `${i ? "L" : "M"}${px(p.x)},${py(p.y)}`).join(" ");
+    el("path", { d, fill:"none", stroke: s.couleur, "stroke-width":2,
+                 "stroke-linejoin":"round", "stroke-linecap":"round" }, svg);
+    s.points.forEach(p => {
+      el("circle", { cx: px(p.x), cy: py(p.y), r: 4, fill: s.couleur,
+                     stroke:"#fff", "stroke-width":2 }, svg);
+    });
+  });
+
+  /* Etiquettes de fin de courbe : deux series qui terminent au meme niveau
+     produiraient deux textes superposes. On les ecarte verticalement. */
+  const fins = series.map(s => {
+    const p = s.points[s.points.length - 1];
+    return { nom: s.nom, couleur: s.couleur, x: px(p.x), y: py(p.y), cible: py(p.y) };
+  }).sort((a, b) => a.cible - b.cible);
+  const ECART = 15;
+  for (let i = 1; i < fins.length; i++)
+    if (fins[i].y - fins[i - 1].y < ECART) fins[i].y = fins[i - 1].y + ECART;
+  fins.forEach(f => {
+    if (Math.abs(f.y - f.cible) > 2)
+      el("line", { x1: f.x + 4, y1: f.cible, x2: f.x + 9, y2: f.y - 4,
+                   stroke: f.couleur, "stroke-width":1, opacity:.45 }, svg);
+    el("text", { x: f.x + 11, y: f.y, class:"etiq-directe",
+                 style:`fill:${f.couleur}` }, svg).textContent = f.nom;
+  });
+
+  /* croix de reperage + infobulle sur la colonne entiere */
+  const trait = el("line", { y1: mg.h - 8, y2: hauteur - mg.b, class:"axe-ligne",
+                             opacity:0 }, svg);
+  const capture = el("rect", { x:0, y:0, width: largeur, height: hauteur,
+                               fill:"transparent" }, svg);
+  capture.addEventListener("mousemove", (e) => {
+    const b = svg.getBoundingClientRect();
+    const rx = (e.clientX - b.left) / b.width * largeur;
+    let plus = xs[0], d0 = Infinity;
+    xs.forEach(x => { const d = Math.abs(px(x) - rx); if (d < d0) { d0 = d; plus = x; } });
+    trait.setAttribute("x1", px(plus)); trait.setAttribute("x2", px(plus));
+    trait.setAttribute("opacity", 1);
+    const l = series.map(s => {
+      const p = s.points.find(q => q.x === plus); if (!p) return "";
+      return `<span class="cle">${s.nom}</span> <span class="v">${format(p.y)}${suffixe}</span>`;
+    }).filter(Boolean).join("<br>");
+    montrer(e, `<b>${plus}</b><br>${l}`);
+  });
+  capture.addEventListener("mouseleave", () => { cacher(); trait.setAttribute("opacity", 0); });
+  return svg;
+}
+
+/* ---------- colonnes (histogramme mensuel) ---------- */
+function colonnes(hote, lignes, opts = {}) {
+  const { largeur = 1020, hauteur = 250, mg = { h:16, b:30, g:42, d:12 } } = opts;
+  const svg = el("svg", { width:"100%", viewBox:`0 0 ${largeur} ${hauteur}` }, hote);
+  const max = Math.max(...lignes.map(l => l.valeur)) * 1.1 || 1;
+  const dispo = largeur - mg.g - mg.d;
+  const pas = dispo / lignes.length;
+  const py = (v) => hauteur - mg.b - v / max * (hauteur - mg.h - mg.b);
+
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, y = py(v);
+    el("line", { x1: mg.g, x2: largeur - mg.d, y1: y, y2: y, class:"grille-ligne" }, svg);
+    el("text", { x: mg.g - 8, y: y + 4, "text-anchor":"end", class:"axe val-num" }, svg)
+      .textContent = nb(v, 0);
+  }
+  if (opts.seuil) {
+    const y = py(opts.seuil);
+    el("line", { x1: mg.g, x2: largeur - mg.d, y1: y, y2: y,
+                 stroke: PALETTE.alerte, "stroke-width":1.5, opacity:.55 }, svg);
+    el("text", { x: largeur - mg.d, y: y - 6, "text-anchor":"end",
+                 style:`font-size:11px;fill:${PALETTE.alerte};font-weight:600` }, svg)
+      .textContent = `seuil de tension ${nb(opts.seuil, 2)}`;
+  }
+
+  lignes.forEach((l, i) => {
+    const x = mg.g + i * pas, w = Math.max(1.5, pas - 2);
+    const y = py(l.valeur);
+    const r = el("rect", { x, y, width: w, height: Math.max(1, hauteur - mg.b - y), rx: 2,
+                           fill: l.tension ? PALETTE.alerte : PALETTE.bleu }, svg);
+    const z = el("rect", { x: x - pas / 2, y: mg.h, width: pas * 2,
+                           height: hauteur - mg.h - mg.b, fill:"transparent" }, svg);
+    survol(r, `<b>${l.libelle}</b><br>
+      <span class="cle">volatilité</span> <span class="v">${nb(l.valeur, 2)}</span><br>
+      <span class="cle">hors anomalie</span> <span class="v">${nb(l.hors, 2)}</span>` +
+      (l.tension ? `<br><span style="color:#fca5a5">période de tension</span>` : ""), z);
+    if (l.tension) el("text", { x: x + w / 2, y: y - 7, "text-anchor":"middle",
+                               class:"etiq-directe val-num",
+                               style:`fill:${PALETTE.alerte}` }, svg)
+      .textContent = nb(l.valeur, 1);
+  });
+  /* quelques annees en abscisse */
+  lignes.forEach((l, i) => {
+    if (!l.libelle.endsWith("-01")) return;
+    el("text", { x: mg.g + i * pas + pas / 2, y: hauteur - mg.b + 16,
+                 "text-anchor":"middle", class:"axe val-num" }, svg)
+      .textContent = l.libelle.slice(0, 4);
+  });
+  return svg;
+}
+
+/* ---------- nuage de points ---------- */
+function nuage(hote, points, opts = {}) {
+  const { taille = 232, nom = "", r: correlation = null, borne = 12 } = opts;
+  const mg = 26;
+  const svg = el("svg", { width:"100%", viewBox:`0 0 ${taille} ${taille}` }, hote);
+  const p = (v) => mg + (v + borne) / (borne * 2) * (taille - mg * 2);
+  const q = (v) => taille - mg - (v + borne) / (borne * 2) * (taille - mg * 2);
+
+  el("line", { x1: mg, x2: taille - mg, y1: q(0), y2: q(0), class:"grille-ligne" }, svg);
+  el("line", { x1: p(0), x2: p(0), y1: mg, y2: taille - mg, class:"grille-ligne" }, svg);
+
+  points.forEach(([a, m]) => {
+    el("circle", { cx: p(a), cy: q(m), r: 1.7, fill: PALETTE.bleu, opacity:.28 }, svg);
+  });
+  if (correlation != null) {
+    /* droite de tendance : pente = r * (ecart-type y / ecart-type x) */
+    const mx = points.reduce((s, v) => s + v[0], 0) / points.length;
+    const my = points.reduce((s, v) => s + v[1], 0) / points.length;
+    const sx = Math.sqrt(points.reduce((s, v) => s + (v[0] - mx) ** 2, 0) / points.length);
+    const sy = Math.sqrt(points.reduce((s, v) => s + (v[1] - my) ** 2, 0) / points.length);
+    const pente = correlation * sy / sx;
+    const f = (x) => my + pente * (x - mx);
+    el("line", { x1: p(-borne), y1: q(f(-borne)), x2: p(borne), y2: q(f(borne)),
+                 stroke: PALETTE.orange, "stroke-width":2 }, svg);
+  }
+  el("text", { x: taille / 2, y: 14, "text-anchor":"middle", class:"etiq-directe" }, svg)
+    .textContent = nom;
+  el("text", { x: taille / 2, y: taille - 6, "text-anchor":"middle", class:"axe val-num" }, svg)
+    .textContent = `r = ${nb(correlation, 3)}`;
+  const z = el("rect", { x:0, y:0, width:taille, height:taille, fill:"transparent" }, svg);
+  survol(z, `<b>${nom}</b><br><span class="cle">corrélation</span> <span class="v">${nb(correlation, 3)}</span><br><span class="cle">séances</span> <span class="v">${points.length}</span>`);
+  return svg;
+}
+
+/* ---------- tableau de secours ---------- */
+function tableau(hote, colonnes_, lignes) {
+  const t = document.createElement("table");
+  const th = t.createTHead().insertRow();
+  colonnes_.forEach(c => { const e = document.createElement("th");
+    e.textContent = c.nom; if (c.n) e.className = "n"; th.appendChild(e); });
+  const tb = t.createTBody();
+  lignes.forEach(l => { const r = tb.insertRow();
+    colonnes_.forEach(c => { const d = r.insertCell();
+      d.textContent = c.rendu ? c.rendu(l) : l[c.cle];
+      if (c.n) d.className = "n"; }); });
+  hote.appendChild(t);
+  return t;
+}
+
+/* Chaque graphique a son jumeau tableau, accessible sans survol. */
+function carte(titre, soustitre, dessiner, donneesTable) {
+  const c = document.createElement("div"); c.className = "carte";
+  const h = document.createElement("header");
+  h.innerHTML = `<h2>${titre}</h2>`;
+  const b = document.createElement("button");
+  b.className = "lien"; b.textContent = "Voir le tableau";
+  h.appendChild(b); c.appendChild(h);
+  if (soustitre) { const s = document.createElement("div");
+    s.className = "soustitre"; s.textContent = soustitre; c.appendChild(s); }
+  const zg = document.createElement("div"); zg.className = "zone"; c.appendChild(zg);
+  const zt = document.createElement("div"); zt.className = "zone masque"; c.appendChild(zt);
+  dessiner(zg);
+  if (donneesTable) tableau(zt, donneesTable.colonnes, donneesTable.lignes);
+  else b.style.display = "none";
+  b.onclick = () => {
+    const vu = zt.classList.toggle("masque");
+    zg.classList.toggle("masque", !vu);
+    b.textContent = vu ? "Voir le tableau" : "Voir le graphique";
+  };
+  return c;
+}
+
+function legende(entrees) {
+  const d = document.createElement("div"); d.className = "legende";
+  entrees.forEach(([nom, couleur]) => {
+    const s = document.createElement("span");
+    s.innerHTML = `<i style="background:${couleur}"></i>${nom}`;
+    d.appendChild(s);
+  });
+  return d;
+}
+
+function tuiles(hote, liste) {
+  const d = document.createElement("div"); d.className = "tuiles";
+  liste.forEach(t => {
+    const e = document.createElement("div");
+    e.className = "tuile" + (t.classe ? " " + t.classe : "");
+    e.innerHTML = `<div class="intitule">${t.intitule}</div>
+      <div class="valeur">${t.valeur}</div>
+      <div class="detail">${t.detail || ""}</div>`;
+    d.appendChild(e);
+  });
+  hote.appendChild(d);
+}
+
+function entete(hote, titre, phrase) {
+  const d = document.createElement("div"); d.className = "entete";
+  d.innerHTML = `<h1>${titre}</h1><p>${phrase}</p>`;
+  hote.appendChild(d);
+}
+</script>
+
+<script>
+/* =======================================================================
+   Les cinq pages
+   ======================================================================= */
+const PAGES = [
+  { id:"p1", n:"1", nom:"Régime de change",        rendre: page1 },
+  { id:"p2", n:"2", nom:"Volatilité par classe",   rendre: page2 },
+  { id:"p3", n:"3", nom:"Exportations",            rendre: page3 },
+  { id:"p4", n:"4", nom:"Sociétés et matières",    rendre: page4 },
+  { id:"p5", n:"5", nom:"Périodes de tension",     rendre: page5 },
+];
+
+const COULEUR_REGIME = { arrime: PALETTE.bleu, gere: PALETTE.jaune,
+                         flottant: PALETTE.orange, reference: PALETTE.gris };
+const NOM_REGIME = { arrime:"Arrimé", gere:"Géré", flottant:"Flottant",
+                     reference:"Référence" };
+const COULEUR_CLASSE = { "Indices": PALETTE.vert, "Matieres premieres": PALETTE.bleu,
+                         "Actions": PALETTE.orange };
+const NOM_CLASSE = { "Indices":"Indices", "Matieres premieres":"Matières premières",
+                     "Actions":"Actions" };
+const COULEUR_CAT = { "Energie":PALETTE.bleu, "Metaux":PALETTE.orange,
+                      "Alimentaire":PALETTE.vert, "Agricoles":PALETTE.jaune };
+const NOM_PAYS = { SEN:"Sénégal", MRT:"Mauritanie", NGA:"Nigeria", GHA:"Ghana",
+                   CIV:"Côte d'Ivoire", MLI:"Mali", BFA:"Burkina Faso", BEN:"Bénin" };
+
+/* ---------------- page 1 : regime de change ---------------- */
+function page1(h) {
+  const d = DONNEES.devises.filter(x => x.regime !== "reference")
+    .sort((a, b) => a.coefficient_variation - b.coefficient_variation);
+  const xof = d.find(x => x.devise_id === "XOF");
+  const ngn = d.find(x => x.devise_id === "NGN");
+
+  entete(h, "Le régime de change protège-t-il de la volatilité ?",
+    "Oui, et l'écart est total. Les monnaies arrimées à l'euro affichent une variabilité nulle, le naira nigérian atteint 0,721.");
+
+  tuiles(h, [
+    { intitule:"Franc CFA · arrimé", valeur:nb(xof.coefficient_variation, 3),
+      detail:"une seule valeur sur 2 579 jours", classe:"accent" },
+    { intitule:"Naira · flottant", valeur:nb(ngn.coefficient_variation, 3),
+      detail:"la plus variable des 15 devises", classe:"chaud" },
+    { intitule:"Valeurs distinctes du XOF", valeur:DONNEES.faits.valeurs_xof,
+      detail:`655,957 francs pour un euro, sur ${DONNEES.faits.jours_xof.toLocaleString("fr-FR")} jours` },
+    { intitule:"Devises suivies", valeur:d.length,
+      detail:"plus l'euro comme référence" },
+  ]);
+
+  const g = document.createElement("div"); g.className = "grille g2"; h.appendChild(g);
+
+  const c1 = carte("Coefficient de variation face à l'euro",
+    "Écart-type du taux divisé par sa moyenne, sur dix ans. Sans unité, donc comparable entre devises.",
+    (z) => {
+      barresH(z, d.map(x => ({
+        libelle: x.devise_id + " · " + x.nom_devise,
+        valeur: x.coefficient_variation,
+        couleur: COULEUR_REGIME[x.regime],
+        info: `<span class="cle">régime</span> <span class="v">${NOM_REGIME[x.regime]}</span><br>
+               <span class="cle">coefficient</span> <span class="v">${nb(x.coefficient_variation, 4)}</span>`,
+      })), { largeur:660, marge:200 });
+      z.appendChild(legende(Object.entries(NOM_REGIME)
+        .filter(([k]) => k !== "reference")
+        .map(([k, v]) => [v, COULEUR_REGIME[k]])));
+    },
+    { colonnes:[
+        { nom:"Devise", cle:"devise_id" },
+        { nom:"Nom", cle:"nom_devise" },
+        { nom:"Coefficient", n:true, rendu:(l) => nb(l.coefficient_variation, 4) },
+        { nom:"Régime", rendu:(l) => NOM_REGIME[l.regime] } ],
+      lignes:d });
+  g.appendChild(c1);
+
+  const parRegime = {};
+  d.forEach(x => (parRegime[x.regime] = parRegime[x.regime] || []).push(x));
+  const c2 = carte("Répartition par régime", "Nombre de devises dans chaque catégorie.",
+    (z) => {
+      barresH(z, Object.entries(parRegime).map(([r, l]) => ({
+        libelle: NOM_REGIME[r], valeur: l.length, couleur: COULEUR_REGIME[r],
+        info: l.map(x => x.devise_id).join(", "),
+      })), { largeur:340, marge:96, format:(v) => v });
+      const p = document.createElement("p");
+      p.className = "soustitre"; p.style.marginTop = "14px";
+      p.innerHTML = "<b>À dire dans le rapport.</b> Le coefficient mesure la variabilité face à l'euro, pas une politique monétaire. Il classe le dollar et la livre en « géré » alors qu'ils flottent librement : ils sont simplement peu volatils face à l'euro.";
+      z.appendChild(p);
+    });
+  g.appendChild(c2);
+}
+
+/* ---------------- page 2 : volatilite par classe ---------------- */
+function page2(h) {
+  entete(h, "Quelle classe d'actif est la plus volatile ?",
+    "Les indices, à 3,98, parce que le VIX en fait partie. Sans lui, ils seraient les plus calmes des trois.");
+
+  let horsAnomalie = false;
+  const zone = document.createElement("div"); h.appendChild(zone);
+
+  const filtres = document.createElement("div");
+  filtres.className = "filtres";
+  filtres.innerHTML = `<label>Mesure</label>
+    <div class="bascule" id="b2">
+      <button aria-pressed="true" data-v="0">Toutes les observations</button>
+      <button aria-pressed="false" data-v="1">Hors anomalie de prix</button>
+    </div>
+    <span class="note">L'anomalie est le pétrole WTI à prix négatif, en avril 2020.</span>`;
+  zone.appendChild(filtres);
+
+  const corps = document.createElement("div"); zone.appendChild(corps);
+
+  function dessiner() {
+    corps.innerHTML = "";
+    const champ = horsAnomalie ? "volatilite_hors_anomalie" : "volatilite";
+    const classes = [...new Set(DONNEES.volatilite_classe.map(x => x.classe_actif))];
+
+    /* La volatilite d'ensemble n'est pas la moyenne des annees : elle est
+       recalculee sur toutes les observations, cote entrepot. */
+    tuiles(corps, [...DONNEES.volatilite_totale]
+      .sort((a, b) => b[champ] - a[champ])
+      .map((t, i) => ({
+        intitule: NOM_CLASSE[t.classe_actif],
+        valeur: nb(t[champ], 2),
+        detail: `${t.instruments} instruments · sur dix ans`,
+        classe: i === 0 ? "accent" : "",
+      })));
+
+    const g = document.createElement("div"); g.className = "grille"; corps.appendChild(g);
+    const series = classes.map(c => ({
+      nom: NOM_CLASSE[c], couleur: COULEUR_CLASSE[c],
+      points: DONNEES.volatilite_classe.filter(x => x.classe_actif === c)
+        .sort((a, b) => a.annee - b.annee)
+        .map(x => ({ x:x.annee, y:x[champ] })),
+    }));
+    g.appendChild(carte("Volatilité annuelle par classe d'actif",
+      "Écart-type des variations quotidiennes, année par année. " +
+      (horsAnomalie ? "Les deux séances du WTI à prix négatif sont écartées."
+                    : "Toutes les observations sont incluses."),
+      (z) => { courbes(z, series, { largeur:1000, hauteur:330 }); },
+      { colonnes:[
+          { nom:"Classe", rendu:(l) => NOM_CLASSE[l.classe_actif] },
+          { nom:"Année", n:true, cle:"annee" },
+          { nom:"Volatilité", n:true, rendu:(l) => nb(l.volatilite, 2) },
+          { nom:"Hors anomalie", n:true, rendu:(l) => nb(l.volatilite_hors_anomalie, 2) },
+          { nom:"Observations", n:true, cle:"observations" },
+          { nom:"Écartées", n:true, cle:"observations_ecartees" } ],
+        lignes:DONNEES.volatilite_classe }));
+
+    if (!horsAnomalie) {
+      const a = document.createElement("div"); a.className = "avert";
+      a.innerHTML = "<b>Lecture de l'année 2020.</b> Les matières premières y sont à 5,21, devant les indices et les actions. Mais deux observations sur 5 819 portent tout l'écart, les deux séances du WTI à prix négatif. Basculer sur « hors anomalie » : la classe retombe à 2,88 et passe dernière.";
+      corps.insertBefore(a, g);
+    }
+  }
+
+  filtres.querySelectorAll("#b2 button").forEach(b => b.onclick = () => {
+    filtres.querySelectorAll("#b2 button").forEach(x =>
+      x.setAttribute("aria-pressed", x === b));
+    horsAnomalie = b.dataset.v === "1"; dessiner();
+  });
+  dessiner();
+}
+
+/* ---------------- page 3 : exportations ---------------- */
+function page3(h) {
+  entete(h, "Quel pays a le panier d'exportation le plus exposé ?",
+    "Le Nigeria, et de très loin : 88,6 % de ses exportations sont de l'énergie en 2024. La Mauritanie dépend des métaux à 33,7 %, le Sénégal de l'énergie à 32,7 % depuis la mise en production du champ de Sangomar.");
+
+  const annees = [...new Set(DONNEES.exportations.map(x => x.annee))].sort((a, b) => b - a);
+  let annee = annees[0];
+
+  const filtres = document.createElement("div"); filtres.className = "filtres";
+  filtres.innerHTML = `<label for="an">Année</label>
+    <select id="an">${annees.map(a => `<option value="${a}">${a}</option>`).join("")}</select>
+    <span class="note">Source Banque Mondiale · part de chaque catégorie dans les exportations de marchandises</span>`;
+  h.appendChild(filtres);
+  const corps = document.createElement("div"); h.appendChild(corps);
+
+  function dessiner() {
+    corps.innerHTML = "";
+    const lignes = DONNEES.exportations.filter(x => x.annee === annee);
+    const cats = ["Energie", "Metaux", "Alimentaire", "Agricoles"];
+    const parPays = {};
+    lignes.forEach(l => {
+      parPays[l.pays] = parPays[l.pays] || { libelle: NOM_PAYS[l.pays] || l.pays, pays:l.pays };
+      parPays[l.pays][l.categorie_export] = l.part_exportations;
+    });
+    const groupes = Object.values(parPays)
+      .sort((a, b) => cats.reduce((s, c) => s + (b[c] || 0), 0) -
+                      cats.reduce((s, c) => s + (a[c] || 0), 0));
+
+    const dominantes = lignes.filter(l => l.est_categorie_dominante)
+      .sort((a, b) => b.part_exportations - a.part_exportations);
+    tuiles(corps, dominantes.slice(0, 4).map((l, i) => ({
+      intitule: NOM_PAYS[l.pays] || l.pays,
+      valeur: nb(l.part_exportations, 1) + " %",
+      detail: l.categorie_export + (l.ecart_points != null
+        ? ` · ${l.ecart_points >= 0 ? "+" : ""}${nb(l.ecart_points, 1)} pt vs ${l.annee - 1}` : ""),
+      classe: i === 0 ? "accent" : "",
+    })));
+
+    const g = document.createElement("div"); g.className = "grille"; corps.appendChild(g);
+    g.appendChild(carte(`Composition du panier d'exportation · ${annee}`,
+      "Part de chaque catégorie dans les exportations de marchandises. Le total ne fait pas 100 %, les catégories ne couvrent pas tout.",
+      (z) => {
+        empileesH(z, groupes, cats, cats.map(c => COULEUR_CAT[c]), { largeur:1000 });
+        z.appendChild(legende(cats.map(c => [c === "Energie" ? "Énergie" :
+          c === "Metaux" ? "Métaux" : c, COULEUR_CAT[c]])));
+      },
+      { colonnes:[
+          { nom:"Pays", rendu:(l) => NOM_PAYS[l.pays] || l.pays },
+          { nom:"Catégorie", cle:"categorie_export" },
+          { nom:"Part", n:true, rendu:(l) => nb(l.part_exportations, 2) + " %" },
+          { nom:"Rang", n:true, cle:"rang_categorie" },
+          { nom:"Écart vs n-1", n:true, rendu:(l) => l.ecart_points == null ? "—"
+              : (l.ecart_points >= 0 ? "+" : "") + nb(l.ecart_points, 2) + " pt" } ],
+        lignes }));
+
+    const suivis = ["SEN", "MRT"];
+    const g2 = document.createElement("div"); g2.className = "grille";
+    g2.style.gridTemplateColumns = "1fr 1fr";
+    corps.appendChild(g2);
+    suivis.forEach(p => {
+      const series = cats.map((c, i) => ({
+        nom: c === "Energie" ? "Énergie" : c === "Metaux" ? "Métaux" : c,
+        couleur: COULEUR_CAT[c],
+        points: DONNEES.exportations
+          .filter(x => x.pays === p && x.categorie_export === c)
+          .sort((a, b) => a.annee - b.annee)
+          .map(x => ({ x:x.annee, y:x.part_exportations })),
+      })).filter(s => s.points.length);
+      g2.appendChild(carte(`${NOM_PAYS[p]} · évolution 2015-2024`,
+        "Comparaison dans le temps, en points de pourcentage.",
+        (z) => courbes(z, series, { largeur:620, hauteur:270, suffixe:" %" })));
+    });
+  }
+
+  filtres.querySelector("#an").onchange = (e) => { annee = +e.target.value; dessiner(); };
+  dessiner();
+}
+
+/* ---------------- page 4 : correlations ---------------- */
+function page4(h) {
+  entete(h, "Les sociétés extractives suivent-elles leur matière première ?",
+    "Oui. Les trois plus gros producteurs d'or occupent les trois premières places, entre 0,62 et 0,66. Le témoin Orange, sans lien avec l'or, reste à 0,043 : c'est lui qui valide la méthode.");
+
+  const c = [...DONNEES.correlations].sort((a, b) => b.correlation - a.correlation);
+  const temoin = c.find(x => x.temoin);
+  const premier = c[0];
+
+  tuiles(h, [
+    { intitule:"Corrélation la plus forte", valeur:nb(premier.correlation, 3),
+      detail:premier.libelle, classe:"accent" },
+    { intitule:"Témoin Orange / Or", valeur:nb(temoin.correlation, 3),
+      detail:"aucun lien économique attendu", classe:"temoin" },
+    { intitule:"Paires comparées", valeur:c.length,
+      detail:"sur environ 2 500 séances communes" },
+    { intitule:"Seuil d'alerte du témoin", valeur:"0,150",
+      detail:"un test dbt échoue au-delà" },
+  ]);
+
+  const g = document.createElement("div"); g.className = "grille"; h.appendChild(g);
+  g.appendChild(carte("Corrélation des variations quotidiennes",
+    "Coefficient de Pearson entre les variations de l'action et celles de sa matière première, sur les seules séances où les deux ont coté.",
+    (z) => {
+      barresH(z, c.map(x => ({
+        libelle: x.libelle + (x.temoin ? "  (témoin)" : ""),
+        valeur: x.correlation,
+        couleur: x.temoin ? PALETTE.gris : PALETTE.bleu,
+        info: `<span class="cle">corrélation</span> <span class="v">${nb(x.correlation, 4)}</span><br>
+               <span class="cle">variance expliquée</span> <span class="v">${nb(x.part_variance_expliquee * 100, 1)} %</span><br>
+               <span class="cle">séances</span> <span class="v">${x.jours_communs}</span>`,
+      })), { largeur:820, marge:250, max:0.78 });
+      z.appendChild(legende([["Paire étudiée", PALETTE.bleu], ["Paire témoin", PALETTE.gris]]));
+    },
+    { colonnes:[
+        { nom:"Paire", cle:"libelle" },
+        { nom:"Action", cle:"instrument_action" },
+        { nom:"Matière", cle:"instrument_matiere" },
+        { nom:"r", n:true, rendu:(l) => nb(l.correlation, 4) },
+        { nom:"Variance expliquée", n:true, rendu:(l) => nb(l.part_variance_expliquee * 100, 1) + " %" },
+        { nom:"Séances", n:true, cle:"jours_communs" } ],
+      lignes:c }));
+
+  const paires = Object.keys(DONNEES.nuages);
+  const c2 = document.createElement("div"); c2.className = "carte";
+  c2.innerHTML = `<header><h2>Nuages de points · six paires</h2></header>
+    <div class="soustitre">Variation quotidienne de l'action en abscisse, de la matière en ordonnée. Même échelle partout, de -12 % à +12 %. Plus les points s'alignent sur la droite, plus la société suit son sous-jacent.</div>`;
+  const grilleN = document.createElement("div");
+  grilleN.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px";
+  paires.forEach(p => {
+    const info = DONNEES.correlations.find(x => x.paire_id === p);
+    const d = document.createElement("div");
+    nuage(d, DONNEES.nuages[p], { nom:info.libelle, r:info.correlation });
+    grilleN.appendChild(d);
+  });
+  c2.appendChild(grilleN);
+  const note = document.createElement("p");
+  note.className = "soustitre"; note.style.marginTop = "12px";
+  note.innerHTML = "<b>Le témoin est la clé de la page.</b> Orange n'a aucun rapport avec l'or : son nuage est un rond sans direction. Si sa corrélation montait, ce ne serait pas le marché qui aurait changé mais le calcul qui serait faux, et les 0,6 des minières ne voudraient plus rien dire.";
+  c2.appendChild(note);
+  h.appendChild(c2);
+}
+
+/* ---------------- page 5 : periodes de tension ---------------- */
+function page5(h) {
+  entete(h, "Quelles ont été les périodes de tension ?",
+    "Deux mois seulement dépassent le seuil sur dix ans, tous les deux au premier trimestre 2020. Mars est le mois du krach, avril celui du prix négatif du pétrole.");
+
+  const t = DONNEES.tension;
+  const tri = [...t].sort((a, b) => b.volatilite - a.volatilite);
+  const mediane = t[0].mediane_historique;
+
+  tuiles(h, [
+    { intitule:"Avril 2020", valeur:nb(tri[0].volatilite, 2),
+      detail:`${nb(tri[0].volatilite_hors_anomalie, 2)} hors anomalie`, classe:"chaud" },
+    { intitule:"Mars 2020", valeur:nb(tri[1].volatilite, 2),
+      detail:"le vrai mois du krach", classe:"accent" },
+    { intitule:"Médiane historique", valeur:nb(mediane, 2), detail:"sur 121 mois observés" },
+    { intitule:"Mois en tension", valeur:t.filter(x => x.est_tension).length,
+      detail:`au-delà de ${nb(mediane * 3, 2)}, soit trois fois la médiane` },
+  ]);
+
+  const g = document.createElement("div"); g.className = "grille"; h.appendChild(g);
+  g.appendChild(carte("Dispersion mensuelle des variations quotidiennes",
+    "Tous instruments confondus, de 2016 à 2026. En rouge, les mois qui dépassent trois fois la médiane.",
+    (z) => colonnes(z, t.map(x => ({
+      libelle:x.mois, valeur:x.volatilite, hors:x.volatilite_hors_anomalie,
+      tension:x.est_tension })), { seuil: mediane * 3, largeur:1040, hauteur:270 }),
+    { colonnes:[
+        { nom:"Mois", cle:"mois" },
+        { nom:"Volatilité", n:true, rendu:(l) => nb(l.volatilite, 2) },
+        { nom:"Hors anomalie", n:true, rendu:(l) => nb(l.volatilite_hors_anomalie, 2) },
+        { nom:"Multiple médiane", n:true, rendu:(l) => nb(l.multiple_mediane, 2) },
+        { nom:"Tension", rendu:(l) => l.est_tension ? "oui" : "non" },
+        { nom:"Écartées", n:true, cle:"observations_ecartees" } ],
+      lignes:tri }));
+
+  const g2 = document.createElement("div"); g2.className = "grille g2"; h.appendChild(g2);
+  g2.appendChild(carte("Les cinq mois les plus agités",
+    "Comparaison des deux mesures. L'écart d'avril 2020 tient à deux observations sur 853.",
+    (z) => {
+      barresH(z, tri.slice(0, 5).flatMap(x => [
+        { libelle:x.mois + " · toutes", valeur:x.volatilite,
+          couleur:x.est_tension ? PALETTE.alerte : PALETTE.bleu },
+        { libelle:x.mois + " · hors anomalie", valeur:x.volatilite_hors_anomalie,
+          couleur:PALETTE.gris },
+      ]), { largeur:560, marge:186, format:(v) => nb(v, 2), hauteurBarre:18, ecart:6 });
+      z.appendChild(legende([["Toutes les observations", PALETTE.bleu],
+                             ["En tension", PALETTE.alerte],
+                             ["Hors anomalie", PALETTE.gris]]));
+    }));
+
+  const c = document.createElement("div"); c.className = "carte";
+  c.innerHTML = `<header><h2>Ce que dit vraiment le pic d'avril 2020</h2></header>
+    <div class="soustitre">Le 20 avril 2020, le pétrole WTI a coté -37,63 dollars : les capacités de stockage étaient saturées et les détenteurs de contrats payaient pour s'en débarrasser.</div>
+    <p style="font-size:13px;color:var(--encre2);line-height:1.6">
+    La variation en pourcentage se calcule par <code>clôture / clôture précédente - 1</code>.
+    Quand le signe change, ce calcul n'a plus de sens : il produit <b>-306 %</b> ce jour-là,
+    puis <b>-127 %</b> le lendemain. Une baisse de plus de 100 % est impossible pour un rendement.
+    <br><br>
+    Ces deux lignes, sur ${DONNEES.faits.lignes_faits.toLocaleString("fr-FR")}, portent
+    à elles seules le record d'avril 2020 :
+    <b>${nb(tri[0].volatilite, 2)} avec, ${nb(tri[0].volatilite_hors_anomalie, 2)} sans</b>.
+    En les écartant, avril passe derrière mars.
+    <br><br>
+    Le choix retenu a été de <b>ne rien supprimer</b> : une colonne
+    <code>variation_exploitable</code> marque ces lignes, et chaque table d'agrégation
+    publie les deux mesures. Masquer la valeur aurait fait disparaître un fait réel.
+    </p>`;
+  g2.appendChild(c);
+}
+
+/* ---------------- navigation ---------------- */
+const menu = document.getElementById("menu");
+const boutons = {};
+
+function ouvrir(id, defiler = true) {
+  if (!PAGES.some(p => p.id === id)) id = PAGES[0].id;
+  PAGES.forEach(q => document.getElementById(q.id)
+    .classList.toggle("active", q.id === id));
+  Object.entries(boutons).forEach(([k, b]) =>
+    k === id ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  if (defiler) scrollTo(0, 0);
+}
+
+PAGES.forEach((p) => {
+  const li = document.createElement("li");
+  const b = document.createElement("button");
+  b.innerHTML = `<i>${p.n}</i>${p.nom}`;
+  b.onclick = () => { location.hash = p.id; ouvrir(p.id); };
+  boutons[p.id] = b;
+  li.appendChild(b); menu.appendChild(li);
+});
+
+PAGES.forEach(p => p.rendre(document.getElementById(p.id)));
+/* l'ancre permet d'ouvrir directement une page : tableau-de-bord.html#p4 */
+ouvrir(location.hash.slice(1) || PAGES[0].id, false);
+addEventListener("hashchange", () => ouvrir(location.hash.slice(1)));
+</script>
+</body>
+</html>

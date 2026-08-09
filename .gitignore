@@ -1,6 +1,9 @@
-# Secrets
+# Secrets. Le filet est volontairement large : aucune cle de service ne doit
+# pouvoir arriver dans le depot par distraction. Les rares JSON legitimes sont
+# ajoutes un par un ci-dessous.
 *.json
 !package.json
+!docs/maquette/theme-powerbi.json
 .env
 
 # Python
