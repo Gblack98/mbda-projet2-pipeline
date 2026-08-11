@@ -41,7 +41,6 @@ sortent de ces tables, pas de calculs refaits dans l'outil de restitution.
 ![Datasets](docs/img/datasets.png)
 
 Guide du tableau de bord : [docs/guide-dashboard.md](docs/guide-dashboard.md).
-Maquette de référence : [docs/maquette/](docs/maquette/).
 Dossier de rédaction du rapport : [docs/dossier-rapport.md](docs/dossier-rapport.md).
 
 Détails et diagrammes : [docs/architecture.md](docs/architecture.md).
