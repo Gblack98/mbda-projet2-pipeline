@@ -44,7 +44,7 @@ def _identifiants():
     if not os.path.exists(chemin):
         raise FileNotFoundError(
             f"Aucun identifiant trouve. Ni st.secrets, ni {chemin}. "
-            "Voir dashboard/README.md, section « Se connecter a BigQuery ».")
+            "Voir docs/guide-dashboard.md, section 1.")
     return service_account.Credentials.from_service_account_file(chemin)
 
 
