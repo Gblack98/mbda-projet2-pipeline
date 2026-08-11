@@ -283,7 +283,7 @@ directement le dataset `marts` avec un compte de service en lecture seule.
 
 Un fichier par question, dans `dashboard/questions/`. Chacun expose son titre,
 sa phrase de réponse, et une fonction `rendre()` qui pose les métriques et les
-graphiques. `dashboard/README.md` explique le reste.
+graphiques. **`docs/guide-dashboard.md` détaille tout, pas à pas.**
 
 **Aucun calcul n'est à écrire.** Les six tables d'agrégation portent déjà les
 écarts-types, les corrélations, les classements et les comparaisons annuelles.
