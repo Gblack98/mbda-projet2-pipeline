@@ -123,8 +123,8 @@ est faux et les autres coefficients ne valent plus rien.
 
 Le calcul est fait ici plutôt que dans l'outil de restitution, pour trois
 raisons : les chiffres du rapport sont reproductibles, ils sont couverts par
-les tests dbt, et Looker comme Power BI lisent la même colonne au lieu de
-recalculer chacun sa formule.
+les tests dbt, et le tableau de bord lit la colonne au lieu de recalculer sa
+propre formule.
 
 **Une convention à connaître.** `variation_pct` n'est un rendement que si les
 deux clôtures comparées sont de même signe. Le WTI a coté -37,63 le 20 avril

@@ -1,14 +1,14 @@
 from datetime import date, datetime, timezone
 
-import requests
+from . import reseau
 
 URL = "https://query1.finance.yahoo.com/v8/finance/chart/{}"
-ENTETES = {"User-Agent": "Mozilla/5.0"}
 
 
 def _cotations_ticker(ticker, periode, recupere_le):
-    reponse = requests.get(URL.format(ticker), headers=ENTETES,
-                           params={"range": periode, "interval": "1d"}, timeout=30)
+    reponse = reseau.session().get(
+        URL.format(ticker), params={"range": periode, "interval": "1d"},
+        timeout=30)
     reponse.raise_for_status()
     resultat = reponse.json()["chart"]["result"]
     if not resultat:

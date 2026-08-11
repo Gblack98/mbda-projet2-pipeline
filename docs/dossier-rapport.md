@@ -145,10 +145,31 @@ dans le dépôt : `mapping_devise_cotation` (8 lignes) qui dit que `USX` vaut `U
 divisé par 100, et `paires_instrument` (13 lignes) qui liste les paires société /
 matière première comparées.
 
+### Le tableau de bord
+
+Une application **Streamlit** en Python, dans `dashboard/`, qui lit `marts` en
+direct avec un compte de service en lecture seule.
+
+Le choix se justifie en trois points, à donner dans le rapport :
+
+- **Un seul outil, sous Linux.** Les alternatives classiques imposaient soit un
+  poste Windows, soit un export intermédiaire.
+- **Le tableau de bord devient du code.** Il est versionné dans le dépôt, relu
+  en pull request et déployé comme le reste du projet. C'était la seule partie
+  qui aurait vécu en dehors de Git.
+- **La démonstration en direct devient possible.** Déclencher le pipeline
+  pendant la soutenance et voir la donnée du jour apparaître à l'écran, sans
+  rien rafraîchir à la main.
+
+Le compte de service utilisé ne peut ni écrire, ni lire `raw`, ni lire
+`marts_staging`. C'est vérifiable en une commande, et cela vaut d'être montré :
+un tableau de bord n'a aucune raison d'avoir plus de droits que la lecture des
+tables finales.
+
 ### `marts`, ce que consomme la restitution
 
 Onze tables, 9,05 Mo, en deux familles : le modèle en étoile et la couche
-décisionnelle. **C'est le seul dataset à brancher dans Looker ou Power BI.**
+décisionnelle. **C'est le seul dataset que lit le tableau de bord.**
 
 ### Un choix à défendre : le rechargement complet
 
@@ -245,7 +266,7 @@ Six tables d'agrégation, une ou deux par question métier. Elles sont calculée
 | `agg_exportations_evolution` | pays × catégorie × année | 300 | 3 |
 | `kpi_instrument_annee` | instrument × année | 451 | 2 et 5 |
 
-**Pourquoi calculer ici plutôt que dans Looker ou Power BI**, trois raisons à
+**Pourquoi calculer ici plutôt que dans le tableau de bord**, trois raisons à
 donner dans le rapport :
 
 1. **Les chiffres du rapport deviennent reproductibles.** Un chiffre obtenu par
@@ -253,8 +274,8 @@ donner dans le rapport :
    produit par un modèle versionné se recalcule à volonté.
 2. **Ils sont couverts par les tests.** Une agrégation faite dans l'outil de
    restitution n'est testée par rien.
-3. **Les deux outils lisent la même colonne.** Looker et Power BI ne recalculent
-   pas chacun sa formule, donc ils ne peuvent pas diverger.
+3. **Le rapport et l'écran affichent la même valeur.** Le tableau de bord lit
+   la colonne, il ne la recalcule pas, donc les deux ne peuvent pas diverger.
 
 ### Les indicateurs calculés
 
