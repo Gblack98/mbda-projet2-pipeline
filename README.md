@@ -19,7 +19,7 @@ Banque Mondiale ┘
 
 ## Stack
 
-Airflow · BigQuery · dbt Core · Power BI · Looker Studio
+Airflow · BigQuery · dbt Core · Streamlit
 
 ## Modèle
 

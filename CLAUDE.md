@@ -10,7 +10,7 @@ Trinôme : Ibrahima Gabar Diop (`Gblack98`), Ndeye Sokhna (`Nokho11`), Isselmou
 (`isselmou85`).
 
 Pipeline quotidien sur 41 instruments financiers et 15 devises, schéma en
-étoile dans BigQuery, restitution Looker Studio et Power BI. Cinq questions
+étoile dans BigQuery, restitution par une application Streamlit. Cinq questions
 métier, détaillées dans `docs/questions-metier.md`.
 
 Isselmou n'utilise pas GitHub : il fait le tableau de bord et a déjà l'accès

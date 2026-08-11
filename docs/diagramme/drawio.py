@@ -110,8 +110,8 @@ marts = bloc("marts", [("fct_cotation_journaliere", "103 104"),
              1100, y0 - 10, "bigquery.svg", VIOLET, w=250)
 
 # --- restitution
-b1 = carte("Looker Studio", 1390, y0 + 55, "looker.svg", sous="connexion native")
-b2 = carte("Power BI", 1390, y0 + 135, "powerbi.svg", sous="export CSV")
+b1 = carte("Streamlit", 1390, y0 + 55, "streamlit.svg", sous="lecture directe de marts")
+b2 = carte("5 pages", 1390, y0 + 135, "python.svg", sous="une par question métier")
 
 for s in (s1, s2, s3):
     fleche(s, a1 if s is s1 else a2)
