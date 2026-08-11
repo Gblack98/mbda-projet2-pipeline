@@ -109,8 +109,7 @@ croisées entre les membres.
 
 ## À prendre dans le tableau de bord
 
-Cinq captures, une par question métier. Les prendre dans l'application
-Streamlit, pas dans la maquette.
+Cinq captures, une par question métier, prises dans l'application Streamlit.
 
 | Fichier | Page |
 |---|---|

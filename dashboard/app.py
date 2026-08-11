@@ -16,7 +16,6 @@ import streamlit as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import donnees  # noqa: E402
-import style as s  # noqa: E402
 from questions import (q1_regime, q2_volatilite, q3_exportations,  # noqa: E402
                        q4_correlations, q5_tension)
 
@@ -25,7 +24,6 @@ PAGES = [q1_regime, q2_volatilite, q3_exportations, q4_correlations, q5_tension]
 st.set_page_config(page_title="Matières premières et devises",
                    page_icon="📊", layout="wide",
                    initial_sidebar_state="expanded")
-st.markdown(s.CSS, unsafe_allow_html=True)
 
 
 def barre_laterale():
@@ -59,7 +57,7 @@ def barre_laterale():
             toutes = sorted(donnees.volatilite_classe()["classe_actif"].unique())
             filtres["classes"] = st.multiselect(
                 "Classe d'actif", options=toutes, default=toutes,
-                format_func=lambda c: s.NOM_CLASSE.get(c, c)) or toutes
+                format_func=lambda c: c) or toutes
         else:
             filtres["classes"] = None
 

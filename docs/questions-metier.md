@@ -320,19 +320,3 @@ Cinq pages, une par question. Sur chaque page :
 La phrase sous le titre est ce qui distingue un tableau de bord d'une collection
 de graphiques. Écrire « Les monnaies arrimées affichent une volatilité nulle,
 les flottantes jusqu'à 0,72 » plutôt que « Volatilité par devise ».
-
-## Maquette
-
-Une maquette interactive complète, alimentée par les vraies données, est dans
-`docs/maquette/tableau-de-bord.html`. Elle s'ouvre par double-clic, sans serveur
-ni connexion. Les cinq pages y sont, avec les chiffres exacts à retrouver.
-
-`docs/maquette/README.md` dit, table par table et colonne par colonne, ce que
-chaque page doit afficher.
-
-![Maquette de la page 1](img/maquette_dashboard.png)
-
-À reproduire à l'identique pour la page 1, puis décliner sur les quatre autres :
-même hauteur de bandeau, mêmes cartes de chiffres clés, même famille de couleurs.
-
-La source est `diagramme/maquette.html`, modifiable si besoin.

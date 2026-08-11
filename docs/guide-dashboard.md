@@ -164,7 +164,7 @@ n'est pas un graphique, c'est un chiffre déguisé.
 
 ### La palette, et pourquoi elle est fermée
 
-Elle est dans `dashboard/style.py` :
+À définir une fois, en tête de projet, et à ne pas élargir au hasard :
 
 | Rôle | Couleur | Usage |
 |---|---|---|
@@ -197,19 +197,26 @@ Traits de 2 pixels, points d'au moins 8 pixels, grille dans un gris à peine
 plus foncé que le fond, pas de bordure autour des barres. Un graphique qui crie
 paraît amateur.
 
-`style.py` fournit `habiller(fig)` qui applique tout ça d'un coup :
+Le plus simple est d'écrire une petite fonction qui applique ces réglages, et
+de l'appeler sur chaque figure. C'est ce qui fait que les cinq pages se
+ressemblent, plutôt que de refaire la mise en forme à chaque graphique.
 
 ```python
 import plotly.graph_objects as go
-import style as s
+
+BLEU = "#2a78d6"
+
+def habiller(fig, hauteur=380):
+    fig.update_layout(height=hauteur, paper_bgcolor="white",
+                      plot_bgcolor="white", margin=dict(l=8, r=8, t=8, b=8))
+    fig.update_xaxes(showgrid=False, linecolor="#e2e8f0")
+    fig.update_yaxes(showgrid=True, gridcolor="#eef2f6", zeroline=False)
+    return fig
 
 fig = go.Figure()
-fig.add_bar(x=d["annee"], y=d["volatilite"], marker_color=s.BLEU)
-st.plotly_chart(s.habiller(fig, hauteur=380), width="stretch")
+fig.add_bar(x=d["annee"], y=d["volatilite"], marker_color=BLEU)
+st.plotly_chart(habiller(fig), width="stretch")
 ```
-
-**Appeler `habiller()` sur chaque figure.** C'est ce qui fait que les cinq pages
-se ressemblent.
 
 ### Étiqueter avec parcimonie
 
@@ -300,9 +307,9 @@ valeur exacte sans survoler, et de vérifier un chiffre du rapport en direct.
 
 Pour chacune : la table, les colonnes, la forme recommandée et pourquoi.
 
-La maquette `docs/maquette/tableau-de-bord.html` s'ouvre par double-clic et
-montre un rendu possible, avec les chiffres attendus. C'est une référence, pas
-une contrainte : faire mieux est encouragé.
+Les chiffres attendus sont dans `docs/dossier-rapport.md`, section 10. Ils
+servent de contrôle : si un graphique en affiche d'autres, une colonne n'est pas
+la bonne.
 
 ---
 
@@ -472,18 +479,18 @@ d'où le filtre « Mesure ».
 - [ ] Le titre est la question, pas un nom de mesure
 - [ ] Une phrase sous le titre donne la réponse
 - [ ] Deux ou trois chiffres clés en haut
-- [ ] `habiller()` est appelé sur chaque figure
+- [ ] La même mise en forme est appliquée à toutes les figures
 - [ ] Aucune couleur hors de la palette, le rouge seulement pour l'alerte
 - [ ] Les étiquettes sont sélectives, pas une par point
 - [ ] Une légende dès qu'il y a deux séries ou plus
 - [ ] Un tableau dépliable donne les valeurs exactes
 - [ ] Les filtres du volet de gauche changent bien le graphique
 - [ ] Il est dit laquelle des deux mesures est affichée
-- [ ] Les chiffres correspondent à la maquette, aux centièmes près
+- [ ] Les chiffres correspondent à ceux du dossier de rapport
 
-Le dernier point mérite une nuance : la maquette est figée au jour où elle a été
-construite, l'application lit BigQuery en direct. Un écart de quelques centièmes
-est normal, le pipeline tourne tous les jours ouvrés. Un écart d'un ordre de
+Le dernier point mérite une nuance : les chiffres du dossier sont datés, alors
+que l'application lit BigQuery en direct. Un écart de quelques centièmes est
+normal, le pipeline tourne tous les jours ouvrés. Un écart d'un ordre de
 grandeur signale une colonne mal choisie.
 
 ---
