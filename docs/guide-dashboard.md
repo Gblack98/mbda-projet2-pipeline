@@ -20,7 +20,13 @@ python -m venv venv-dashboard
 Puis `http://localhost:8501`.
 
 À chaque fois qu'un fichier est enregistré, Streamlit propose de recharger la
-page. On travaille sans jamais relancer la commande, le retour est immédiat.
+page.
+
+**Une exception qui fait perdre du temps** : Streamlit ne surveille que le
+fichier principal, `app.py`. Les pages sont dans `dashboard/questions/`, donc
+importées comme modules, et Python les garde en mémoire. Modifier une page
+demande donc de **redémarrer le serveur** (Ctrl+C puis relancer la commande).
+Sinon on modifie le fichier et l'écran ne bouge pas.
 
 **La clé de connexion** n'est pas dans le dépôt, c'est volontaire. Elle est
 attendue à `~/.gcp/mbda-dashboard-ro.json`, ou dans la variable
