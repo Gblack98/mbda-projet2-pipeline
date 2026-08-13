@@ -109,8 +109,7 @@ croisées entre les membres.
 
 ## À prendre dans le tableau de bord
 
-Cinq captures, une par question métier. Les prendre dans l'outil final, Looker
-Studio ou Power BI, pas dans la maquette.
+Cinq captures, une par question métier, prises dans l'application Streamlit.
 
 | Fichier | Page |
 |---|---|
@@ -171,25 +170,32 @@ where paire_id = 'barrick_or' order by annee
 
 ---
 
-## Récapitulatif
+## Ce qui est dans le dossier
 
-| # | Fichier | État |
+| Fichier | Contenu | Origine |
 |---|---|---|
-| 01 | architecture.png | fourni |
-| 02 | datasets.png | fourni |
-| 03 | bigquery-datasets.png | à prendre |
-| 04 | schema-etoile.png | fourni |
-| 05 | bigquery-marts.png | à prendre |
-| 06 | dbt-build.png | à prendre |
-| 07 | dbt-docs-lineage.png | à prendre |
-| 08 | airflow-graphe.png | à prendre |
-| 09 | airflow-succes.png | à prendre |
-| 10 | github-actions.png | à prendre |
-| 11 | alerte-mail.png | à prendre |
-| 12-16 | dashboard-q1 à q5.png | à prendre |
-| 17 | wti-negatif.png | à prendre |
-| 18 | yahoo-longname.png | à prendre |
-| 19 | bigquery-schema.png | optionnelle |
-| 20 | airflow-logs-recapituler.png | optionnelle |
-| 21 | github-pr.png | optionnelle |
-| 22 | correlation-barrick.png | optionnelle |
+| `01-architecture.png` | la chaîne de bout en bout | généré par `rendre.py` |
+| `architecture.png` | la même, en 3420 × 840 | export manuel |
+| `architecture_poster.png` | la même, en 4080 × 2300 | export manuel |
+| `pipeline.gif` | la chaîne animée | export manuel |
+| `02-datasets.png` | les trois datasets BigQuery | généré par `rendre.py` |
+| `04-schema-etoile.png` | le modèle dimensionnel | généré par `rendre.py` |
+| `dag_airflow.png` | le DAG, 16 tâches en vert | capture Airflow |
+| `dbt-dag.png` | le lineage dbt complet | capture dbt docs |
+
+Les trois versions de l'architecture font double emploi. Garder celle qui rend
+le mieux à l'impression et retirer les autres avant de rendre.
+
+## Ce qui manque encore
+
+| # | Capture | Où la prendre |
+|---|---|---|
+| 03 | les trois datasets dans la console | BigQuery, panneau de gauche déplié |
+| 05 | détails de `fct_cotation_journaliere` | BigQuery, onglet Détails, montrer le clustering |
+| 06 | `dbt build` en succès | terminal, cadré sur `PASS=87` |
+| 09 | vue Grid d'une exécution | Airflow, tout en vert, durée affichée |
+| 10 | le workflow en succès | GitHub, onglet Actions |
+| 11 | le courriel d'alerte | boîte mail, **masquer l'adresse** |
+| 12-16 | les cinq pages du tableau de bord | l'application Streamlit |
+| 17 | le WTI à prix négatif | BigQuery, requête donnée plus haut |
+| 18 | `longName` du ticker | terminal, script donné plus haut |

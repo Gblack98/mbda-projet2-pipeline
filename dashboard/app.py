@@ -1,0 +1,64 @@
+"""Point d'entree du tableau de bord.
+
+Ce fichier ne fait qu'une chose : verifier que la lecture de BigQuery
+fonctionne et montrer ce qui est disponible. La navigation, les filtres et les
+graphiques restent a construire, voir docs/guide-dashboard.md.
+
+Lance en local :
+
+    ./venv-dashboard/bin/streamlit run dashboard/app.py
+"""
+
+import os
+import sys
+
+import streamlit as st
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import donnees  # noqa: E402
+
+# Une fonction de donnees.py par table lisible. Le libelle est celui qui
+# s'affiche dans la liste deroulante.
+TABLES = {
+    "dim_devise": donnees.devises,
+    "dim_instrument": donnees.instruments,
+    "agg_volatilite_classe_annee": donnees.volatilite_classe,
+    "agg_tension_mensuelle": donnees.tension,
+    "agg_correlation_instrument": donnees.correlations,
+    "agg_correlation_paire_annee": donnees.correlations_par_annee,
+    "agg_exportations_evolution": donnees.exportations,
+    "kpi_instrument_annee": donnees.kpi_instrument,
+}
+
+st.set_page_config(page_title="Matières premières et devises",
+                   page_icon="📊", layout="wide")
+
+st.title("Matières premières et devises")
+st.caption("Master 1 MBDA · UN-CHK · 2026")
+
+try:
+    c = donnees.couverture().iloc[0]
+except FileNotFoundError as err:
+    st.error(str(err))
+    st.stop()
+
+st.markdown(
+    "La connexion à BigQuery est en place et le dataset `marts` est lisible. "
+    "Les pages du tableau de bord restent à construire : voir "
+    "`docs/guide-dashboard.md`.")
+
+g, d = st.columns(2)
+g.metric("Cotations", f"{int(c.lignes):,}".replace(",", " "))
+d.metric("Instruments", int(c.instruments))
+st.caption(f"Du {c.debut:%d/%m/%Y} au {c.fin:%d/%m/%Y}. "
+           "Lecture seule, dataset `marts`.")
+
+st.divider()
+
+nom = st.selectbox("Table", list(TABLES))
+st.dataframe(TABLES[nom](), width="stretch", hide_index=True)
+
+if st.button("Rafraîchir les données"):
+    st.cache_data.clear()
+    st.rerun()

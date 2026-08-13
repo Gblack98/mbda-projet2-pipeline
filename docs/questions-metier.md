@@ -19,8 +19,8 @@ Six tables portent les indicateurs, à brancher telles quelles :
 | `agg_exportations_evolution` | pays × catégorie × année | 3 |
 | `kpi_instrument_annee` | instrument × année | 2 et 5 |
 
-Recalculer un écart-type à la main dans Looker ou Power BI donnera un chiffre
-différent de celui du rapport. Prendre la colonne déjà calculée.
+Recalculer un écart-type dans le tableau de bord donnerait un chiffre différent
+de celui du rapport. Prendre la colonne déjà calculée.
 
 **Une convention à connaître avant de lire un chiffre.** `variation_pct` est un
 rendement, et un rendement suppose deux clôtures de même signe. Le WTI a coté
@@ -272,56 +272,31 @@ colonnes est affichée, sinon le graphique se contredit d'une lecture à l'autre
 
 ---
 
-## Construire le rapport dans Looker Studio
+## Construire les pages
 
-**Connexion**
+Le tableau de bord est une application Streamlit, dans `dashboard/`. Elle lit
+directement le dataset `marts` avec un compte de service en lecture seule.
 
-1. lookerstudio.google.com, *Créer* puis *Rapport*
-2. Connecteur **BigQuery**, projet `crucial-bonsai-418120`
-3. Dataset `marts`, une source par table
-4. Répéter pour les 5 tables
-
-**Jointures** : *Ressource* → *Gérer les sources* → *Fusionner les données*.
-Joindre `fct_cotation_journaliere` à `dim_instrument` sur `instrument_id`, et à
-`dim_temps` sur `date_cotation = date_jour`. Type *Left outer*.
-
-**Champs calculés utiles**
-
-```
-Volatilite      STDDEV(variation_pct)
-Amplitude       AVG(ABS(variation_pct))
-Mois            FORMAT_DATETIME("%Y-%m", date_cotation)
+```bash
+./venv-dashboard/bin/streamlit run dashboard/app.py
 ```
 
-**Réglages à ne pas oublier**
+En l'état, `app.py` vérifie la connexion et laisse parcourir les tables. La
+navigation, les filtres et les graphiques restent à écrire, et leur organisation
+est libre. **`docs/guide-dashboard.md` détaille tout, pas à pas.**
 
-- *Style* → décocher les bordures et ombres des graphiques, garder les cartes plates
-- Grille en `#e2e8f0`, épaisseur 1
-- Format des nombres : 2 décimales pour les coefficients, 0 pour les volumes
-- Une plage de dates commune en haut de chaque page, appliquée au rapport entier
+**Aucun calcul n'est à écrire.** Les six tables d'agrégation portent déjà les
+écarts-types, les corrélations, les classements et les comparaisons annuelles.
+Une page ne fait que choisir des colonnes et un type de graphique.
 
-## Construire le rapport dans Power BI
+**Aucun SQL non plus.** Tout passe par `dashboard/donnees.py`, une fonction par
+table, qui rend un DataFrame. Si une donnée manque, on ajoute une fonction là,
+pas une requête dans une page.
 
-**Connexion** : *Obtenir les données* → *Google BigQuery* → connexion par compte
-Google. Mode **Import** plutôt que DirectQuery : le volume est petit et le rapport
-sera plus rapide.
-
-Si la connexion directe pose problème, exporter les 5 tables en CSV depuis
-BigQuery et les importer. C'est moins élégant mais ça déverrouille.
-
-**Modèle** : dans la vue *Modèle*, relier `fct_cotation_journaliere` aux trois
-dimensions. Cardinalité plusieurs-à-un, sens de filtre simple.
-
-**Mesures DAX**
-
-```
-Volatilite = STDEV.P(fct_cotation_journaliere[variation_pct])
-Amplitude = AVERAGEX(fct_cotation_journaliere, ABS([variation_pct]))
-Correlation = ...  -- utiliser le visuel Nuage de points, pas une mesure
-```
-
-**Thème** : *Affichage* → *Thèmes* → *Personnaliser*. Coller les quatre couleurs
-de la palette dans l'ordre.
+Les filtres sont dans le volet de gauche et s'appliquent à la page entière :
+période, classe d'actif, mesure. C'est ce qui fait la différence entre un
+tableau de bord et une suite de graphiques : on doit pouvoir découper les
+mesures par les axes du modèle en étoile.
 
 ## Mise en page commune
 
@@ -345,20 +320,3 @@ Cinq pages, une par question. Sur chaque page :
 La phrase sous le titre est ce qui distingue un tableau de bord d'une collection
 de graphiques. Écrire « Les monnaies arrimées affichent une volatilité nulle,
 les flottantes jusqu'à 0,72 » plutôt que « Volatilité par devise ».
-
-## Maquette
-
-Une maquette interactive complète, alimentée par les vraies données, est dans
-`docs/maquette/tableau-de-bord.html`. Elle s'ouvre par double-clic, sans serveur
-ni connexion. Les cinq pages y sont, avec les chiffres exacts à retrouver.
-
-`docs/maquette/README.md` donne la marche à suivre pour Power BI et Looker
-Studio, table par table et colonne par colonne, et
-`docs/maquette/theme-powerbi.json` applique la palette d'un coup.
-
-![Maquette de la page 1](img/maquette_dashboard.png)
-
-À reproduire à l'identique pour la page 1, puis décliner sur les quatre autres :
-même hauteur de bandeau, mêmes cartes de chiffres clés, même famille de couleurs.
-
-La source est `diagramme/maquette.html`, modifiable si besoin.

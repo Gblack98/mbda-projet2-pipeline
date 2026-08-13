@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 
-import requests
+from . import reseau
 
 URL = "https://api.frankfurter.dev/v2/rates"
-ENTETES = {"User-Agent": "Mozilla/5.0"}
 
 
 def recuperer(devises, debut):
-    reponse = requests.get(URL, headers=ENTETES, timeout=60, params={
+    reponse = reseau.session().get(URL, timeout=60, params={
         "base": "EUR", "quotes": ",".join(devises), "from": debut})
     reponse.raise_for_status()
     recupere_le = datetime.now(timezone.utc).isoformat()
@@ -29,7 +28,7 @@ URL_DEVISES = "https://api.frankfurter.dev/v2/currencies"
 
 
 def devises(codes):
-    reponse = requests.get(URL_DEVISES, headers=ENTETES, timeout=30)
+    reponse = reseau.session().get(URL_DEVISES, timeout=30)
     reponse.raise_for_status()
     return [{
         "devise_id": c["iso_code"],

@@ -3,7 +3,6 @@
 # ajoutes un par un ci-dessous.
 *.json
 !package.json
-!docs/maquette/theme-powerbi.json
 .env
 
 # Python
@@ -28,3 +27,7 @@ logs/
 .DS_Store
 docs/__pycache__/
 docs/diagramme/frames/
+
+# Tableau de bord
+venv-dashboard/
+.streamlit/secrets.toml
