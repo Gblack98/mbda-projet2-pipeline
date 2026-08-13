@@ -1,10 +1,6 @@
--- La paire temoin ne mesure rien de reel : Orange n'a aucun lien avec l'or.
--- Sa correlation doit donc rester proche de zero. Si elle monte, ce n'est pas
--- le marche qui a change, c'est le calcul de correlation qui est fausse, et
--- les 0,6 des minieres ne veulent alors plus rien dire.
---
--- Le seuil de 0,15 est large a dessein : il laisse passer le bruit d'un
--- echantillon de 2 500 seances et n'attrape qu'une vraie derive.
+-- Orange n'a aucun lien avec l'or. Si cette correlation monte, c'est le
+-- calcul qui derape, et les 0,6 des minieres ne valent plus rien.
+-- Seuil large a 0,15 : le bruit de 2 500 seances ne doit pas le declencher.
 
 select
     paire_id,

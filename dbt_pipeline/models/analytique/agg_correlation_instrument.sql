@@ -1,10 +1,5 @@
--- Question 4 : les societes extractives suivent-elles leur matiere premiere.
---
--- Correlation de Pearson entre les variations quotidiennes de l'action et
--- celles de sa matiere, sur les seules seances ou les deux ont cote. La paire
--- temoin Orange / Or est ce qui valide la methode : Orange n'a aucun lien avec
--- l'or, sa correlation doit rester proche de zero. Si elle monte, c'est le
--- calcul qui est en cause, pas le marche.
+-- Question 4. Pearson sur les variations quotidiennes, seances communes
+-- seulement. La paire temoin Orange / Or doit rester proche de zero.
 
 with variations as (
     select date_cotation, instrument_id, variation_pct

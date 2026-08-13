@@ -67,15 +67,14 @@ def test_instruments_manquants_vide_quand_la_collecte_est_complete():
 
 
 def test_barrick_cote_sous_son_symbole_actuel():
-    # GOLD a ete repris par Gold.com, Inc. apres le changement de nom de
-    # Barrick : correlation avec l'or de 0,215 au lieu de 0,655.
+    # GOLD appartient a Gold.com depuis 2025, pas a Barrick.
     assert "GOLD" not in config.TICKERS
     assert "B" in config.TICKERS
 
 
 def test_session_reprend_sur_erreur_reseau():
-    # Le chemin de production (scripts/ingest.py, lance par GitHub Actions) n'a
-    # pas les relances d'Airflow : la reprise doit vivre dans la session HTTP.
+    # scripts/ingest.py n'a pas les relances d'Airflow, la reprise doit donc
+    # vivre dans la session elle-meme.
     adaptateur = reseau.session().get_adapter("https://exemple.fr")
     reprise = adaptateur.max_retries
     assert reprise.total >= 2
