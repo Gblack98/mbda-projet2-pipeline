@@ -24,7 +24,20 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      # L'installation est reessayee. dbt-core tire dbt-core-experimental-parser,
+      # un paquet source dont le build telecharge un binaire depuis les releases
+      # GitHub. Ce telechargement a coupe en pleine reponse le 12 aout et fait
+      # echouer toute l'execution avant meme l'ingestion. Le projet reessaie
+      # deja ses appels reseau dans common/reseau.py, pour exactement la meme
+      # raison : l'installation ne fait pas exception.
+      - name: Dependances
+        run: |
+          for essai in 1 2 3; do
+            pip install -r requirements.txt && exit 0
+            echo "Installation en echec, tentative $essai sur 3."
+            sleep 15
+          done
+          exit 1
 
       - name: Cle de service
         env:

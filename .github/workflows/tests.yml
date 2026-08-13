@@ -1,0 +1,48 @@
+name: Tests
+
+# Les tests tournent sur chaque pull request vers main, la ou ils servent :
+# au moment de la relecture. Jusqu'ici aucun test ne tournait sur les PR, seul
+# le pipeline planifie de 18h37 executait quoi que ce soit, et une regression
+# n'apparaissait donc que le soir, en production.
+#
+# Ce workflow ne touche pas BigQuery et ne lit aucun secret. Il n'a rien a
+# proteger, il peut donc tourner sur n'importe quelle contribution.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Une branche poussee plusieurs fois d'affilee n'occupe qu'un runner :
+# l'execution en cours est annulee par la suivante.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # dbt est volontairement exclu. Aucun test ne l'importe, et son
+      # installation passe par dbt-core-experimental-parser, un paquet source
+      # dont le build telecharge un binaire depuis les releases GitHub. C'est ce
+      # telechargement qui a fait echouer le pipeline du 12 aout. L'inclure ici
+      # rendrait chaque relecture aussi fragile, pour aucun gain.
+      - name: Dependances
+        shell: bash
+        run: pip install -r <(grep -v '^dbt-' requirements.txt)
+
+      - name: Tests
+        run: python -m pytest tests -q
+
+      # Les tests n'importent que quatre modules de common. Cette etape verifie
+      # au moins que tout le reste se compile, y compris le DAG et le script
+      # d'ingestion, qui sont le chemin reellement execute en production.
+      - name: Compilation
+        run: python -m compileall -q airflow/dags scripts dashboard
