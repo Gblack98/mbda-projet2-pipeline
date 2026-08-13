@@ -2,12 +2,9 @@ version: 2
 models:
   - name: agg_volatilite_classe_annee
     description: >
-      Volatilité par classe d'actif et par année. Grain classe x année.
-      volatilite est l'écart-type d'échantillon de variation_pct sur toutes
-      les observations, c'est la valeur qui reproduit les chiffres publiés.
-      volatilite_hors_anomalie écarte les variations calculées à cheval sur
-      un changement de signe du prix, et observations_ecartees dit combien
-      il y en avait.
+      Volatilité par classe d'actif et par année. volatilite est l'écart-type
+      d'échantillon de variation_pct. volatilite_hors_anomalie écarte les
+      variations à cheval sur un changement de signe du prix.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [classe_actif, annee]
@@ -32,9 +29,8 @@ models:
   - name: agg_tension_mensuelle
     description: >
       Dispersion mensuelle des variations quotidiennes, tous instruments
-      confondus, et repérage des périodes de tension. Grain mois. Le seuil
-      est relatif : est_tension vaut vrai au-delà de trois fois la médiane
-      des mois observés, il suit donc les données quand elles s'allongent.
+      confondus. est_tension vaut vrai au-delà de trois fois la médiane des
+      mois observés, seuil relatif qui suit les données.
     columns:
       - name: mois
         tests:
@@ -49,10 +45,9 @@ models:
 
   - name: agg_correlation_instrument
     description: >
-      Corrélation de Pearson entre les variations quotidiennes d'une société
-      et celles de sa matière première, sur les seules séances où les deux ont
-      coté. La paire témoin Orange / Or doit rester proche de zéro : c'est
-      elle qui valide la méthode, un test singulier le vérifie.
+      Corrélation de Pearson entre une société et sa matière première, sur les
+      séances communes. La paire témoin Orange / Or doit rester proche de zéro,
+      un test singulier le vérifie.
     columns:
       - name: paire_id
         tests:
@@ -75,9 +70,9 @@ models:
 
   - name: agg_correlation_paire_annee
     description: >
-      La même corrélation découpée par année. Sert de contrôle de stabilité :
-      une paire dont le coefficient dérive d'une année sur l'autre signale un
-      changement d'activité de la société, ou un problème de série.
+      La même corrélation, année par année. Contrôle de stabilité : un
+      coefficient qui dérive signale un changement d'activité ou une série
+      douteuse.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [paire_id, annee]
@@ -97,10 +92,9 @@ models:
 
   - name: agg_exportations_evolution
     description: >
-      Part de chaque catégorie dans les exportations d'un pays, avec le
-      classement de l'année et l'écart avec l'année précédente présente dans
-      les données. Les écarts se lisent en points, part_exportations étant
-      déjà un pourcentage.
+      Part de chaque catégorie dans les exportations d'un pays, son rang, et
+      l'écart avec l'année précédente présente dans les données. Les écarts se
+      lisent en points.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [pays, annee, categorie_export]
@@ -120,10 +114,9 @@ models:
 
   - name: kpi_instrument_annee
     description: >
-      Indicateurs annuels par instrument : performance en devise de cotation
-      et en euros, volatilité, amplitude moyenne, volume moyen, et écart de
-      performance avec l'année précédente. annee_complete distingue les
-      années pleines de l'année en cours, forcément tronquée.
+      Indicateurs annuels par instrument : performance en devise de cotation et
+      en euros, volatilité, amplitude, volume. annee_complete écarte l'année en
+      cours, forcément tronquée.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [instrument_id, annee]

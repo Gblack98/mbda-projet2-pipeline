@@ -4,9 +4,8 @@ from datetime import datetime, timedelta, timezone
 
 from airflow.decorators import dag, task, task_group
 
-# Airflow 3 a sorti BashOperator du coeur pour le mettre dans le provider
-# standard, et l'ancien chemin n'existe plus. L'equipe tourne sur les deux
-# majeures, le DAG doit s'importer des deux cotes.
+# Airflow 3 a deplace BashOperator dans le provider standard. L'equipe tourne
+# sur les deux majeures, le DAG doit s'importer des deux cotes.
 try:
     from airflow.providers.standard.operators.bash import BashOperator
 except ImportError:
@@ -20,17 +19,14 @@ from common import (  # noqa: E402
 
 CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
-# dbt vit dans un autre environnement : ses versions de google-cloud-*
-# sont incompatibles avec celles d'Airflow.
+# dbt a son propre venv, ses versions de google-cloud-* jurent avec Airflow.
 DBT = f"cd {RACINE}/dbt_pipeline && {RACINE}/venv/bin/dbt"
 
 
 @dag(
     dag_id="ingest_market_data",
-    # Declenchement manuel. Le workflow GitHub Actions tient le calendrier
-    # (jours ouvres, 18h37) et tourne sans machine allumee ; ce DAG couvre le
-    # meme perimetre et sert a demontrer l'orchestration. Les deux planifies en
-    # meme temps ecriraient les memes tables en WRITE_TRUNCATE.
+    # Manuel : c'est GitHub Actions qui tient le calendrier. Deux planifies
+    # ecriraient les memes tables en WRITE_TRUNCATE.
     schedule=None,
     start_date=datetime(2026, 1, 1),
     catchup=False,

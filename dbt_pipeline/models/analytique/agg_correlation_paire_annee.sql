@@ -1,11 +1,6 @@
--- Meme mesure que agg_correlation_instrument, decoupee par annee.
---
--- Une correlation calculee sur dix ans ecrase les ruptures. Le decoupage sert
--- de controle : une paire solide garde un coefficient stable d'une annee sur
--- l'autre. Une paire qui derive signale soit un changement reel de l'activite
--- de la societe, soit un probleme de serie. C'est ce decoupage qui a montre
--- que la paire barrick_or reste sous 0,25 pendant six ans la ou les autres
--- minieres aurifieres tiennent 0,5 a 0,7 : voir docs/questions-metier.md.
+-- Meme mesure que agg_correlation_instrument, annee par annee.
+-- Dix ans d'un bloc ecrasent les ruptures. Une paire solide garde un
+-- coefficient stable ; celle qui derive merite un coup d'oeil.
 
 with variations as (
     select date_cotation, instrument_id, variation_pct

@@ -1,10 +1,7 @@
 """Point d'entree du tableau de bord.
 
-Ce fichier ne fait qu'une chose : verifier que la lecture de BigQuery
-fonctionne et montrer ce qui est disponible. La navigation, les filtres et les
-graphiques restent a construire, voir docs/guide-dashboard.md.
-
-Lance en local :
+Verifie que la lecture de BigQuery marche et laisse parcourir les tables.
+Le reste est a construire, voir docs/guide-dashboard.md.
 
     ./venv-dashboard/bin/streamlit run dashboard/app.py
 """
@@ -18,8 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import donnees  # noqa: E402
 
-# Une fonction de donnees.py par table lisible. Le libelle est celui qui
-# s'affiche dans la liste deroulante.
+# Ce qui s'affiche dans la liste deroulante, et la fonction correspondante.
 TABLES = {
     "dim_devise": donnees.devises,
     "dim_instrument": donnees.instruments,
