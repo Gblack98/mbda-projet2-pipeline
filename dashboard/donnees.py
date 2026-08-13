@@ -1,10 +1,7 @@
 """Acces a BigQuery pour le tableau de bord.
 
-Un seul endroit lit l'entrepot. Les pages ne voient que des DataFrames, elles
-n'ecrivent jamais de SQL. Si une requete doit changer, elle change ici.
-
-Le compte de service utilise est en lecture seule et limite au dataset marts :
-il ne peut ni ecrire, ni lire raw ou marts_staging. Verifiable avec
+Seul fichier qui ecrit du SQL, les pages ne voient que des DataFrames.
+Le compte de service est en lecture seule sur marts. Pour le verifier :
 `python dashboard/donnees.py`.
 """
 
@@ -19,25 +16,20 @@ from google.oauth2 import service_account
 PROJET = "crucial-bonsai-418120"
 MARTS = f"`{PROJET}`.marts"
 
-# Duree de cache. Le pipeline tourne une fois par jour ouvre : dix minutes
-# suffisent largement et permettent de montrer une donnee fraiche en soutenance
-# sans marteler l'entrepot a chaque clic.
+# Le pipeline tourne une fois par jour, dix minutes de cache suffisent.
 CACHE = 600
 
 
 def _identifiants():
-    """Trois sources possibles, dans cet ordre.
-
-    1. st.secrets["gcp_service_account"] : ce que lit Streamlit Community Cloud.
-    2. MBDA_DASHBOARD_KEYFILE : un chemin, pratique en local.
-    3. ~/.gcp/mbda-dashboard-ro.json : le chemin par defaut du projet.
+    """st.secrets d'abord (Streamlit Cloud), puis MBDA_DASHBOARD_KEYFILE,
+    puis ~/.gcp/mbda-dashboard-ro.json.
     """
     try:
         if "gcp_service_account" in st.secrets:
             infos = dict(st.secrets["gcp_service_account"])
             return service_account.Credentials.from_service_account_info(infos)
     except Exception:
-        pass  # pas de fichier secrets en local, ce n'est pas une erreur
+        pass  # pas de fichier secrets en local, c'est normal
 
     chemin = os.path.expanduser(os.environ.get(
         "MBDA_DASHBOARD_KEYFILE", "~/.gcp/mbda-dashboard-ro.json"))
@@ -55,10 +47,8 @@ def client():
 
 @st.cache_data(ttl=CACHE, show_spinner="Lecture de BigQuery…")
 def _lire(sql: str) -> pd.DataFrame:
-    # create_bqstorage_client=False : l'API Storage accelere le transfert mais
-    # exige la permission bigquery.readsessions.create, que le compte en lecture
-    # seule n'a pas et ne doit pas avoir. Les volumes ici sont minuscules, le
-    # transfert REST suffit largement.
+    # Pas d'API Storage : elle demande bigquery.readsessions.create, que le
+    # compte en lecture seule n'a pas. Les volumes sont minuscules de toute facon.
     return client().query(sql).to_dataframe(create_bqstorage_client=False)
 
 

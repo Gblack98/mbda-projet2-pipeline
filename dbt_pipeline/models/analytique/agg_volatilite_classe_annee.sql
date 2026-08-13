@@ -1,10 +1,6 @@
--- Question 2 : quelle classe d'actif est la plus volatile, et comment cela
--- evolue-t-il dans le temps.
---
--- La volatilite se mesure sur variation_pct, jamais sur cloture_eur : un
--- ecart-type de prix comparerait un instrument cote 2 EUR a un autre cote
--- 800 EUR. L'ecart-type retenu est celui d'echantillon (stddev en BigQuery),
--- c'est lui qui reproduit les chiffres publies dans docs/questions-metier.md.
+-- Question 2, annee par annee.
+-- Sur variation_pct, jamais sur cloture_eur : sinon on compare un titre a
+-- 2 EUR et un autre a 800 EUR. stddev, donc ecart-type d'echantillon.
 
 with base as (
     select

@@ -1,9 +1,6 @@
--- Question 5 : quelles ont ete les periodes de tension.
---
--- Un mois est dit sous tension quand la dispersion des variations quotidiennes,
--- tous instruments confondus, depasse trois fois la mediane des mois observes.
--- Le seuil est relatif a l'historique du jeu, pas fixe a la main : il suit les
--- donnees quand elles s'allongent.
+-- Question 5. Un mois est sous tension quand la dispersion des variations
+-- quotidiennes depasse trois fois la mediane des mois observes. Seuil
+-- relatif a l'historique, il suit les donnees.
 
 with mensuel as (
     select

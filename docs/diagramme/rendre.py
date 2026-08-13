@@ -35,8 +35,8 @@ def recadrer(image, geometrie):
 
 CAPTURES = os.path.join(ICI, "..", "captures")
 
-# Le dossier des captures du rapport reprend les diagrammes deja generes, sous
-# leur numero d'ordre. On recopie a chaque rendu, sinon les deux divergent.
+# Les captures du rapport reprennent les memes images, numerotees. On recopie
+# a chaque rendu, sinon les deux dossiers divergent.
 NUMEROTATION = {
     "architecture.png": "01-architecture.png",
     "datasets.png": "02-datasets.png",

@@ -1,0 +1,39 @@
+name: Tests
+
+# Les tests au moment de la relecture, pas le soir en production.
+# Ni BigQuery ni secret ici, ce workflow n'a rien a proteger.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Un seul runner par branche, la poussee suivante annule la precedente.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # dbt est exclu : aucun test ne l'importe, et son installation est
+      # fragile (voir le commentaire dans pipeline.yml).
+      - name: Dependances
+        shell: bash
+        run: pip install -r <(grep -v '^dbt-' requirements.txt)
+
+      - name: Tests
+        run: python -m pytest tests -q
+
+      # Les tests n'importent que quatre modules de common. Cette etape verifie
+      # au moins que tout le reste se compile, y compris le DAG et le script
+      # d'ingestion, qui sont le chemin reellement execute en production.
+      - name: Compilation
+        run: python -m compileall -q airflow/dags scripts dashboard

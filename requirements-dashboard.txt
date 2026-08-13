@@ -1,17 +1,8 @@
-# Environnement du tableau de bord, separe des deux autres.
-#
-# Il ne partage rien avec l'ingestion ni avec dbt : le dashboard ne fait que
-# lire marts, avec un compte de service en lecture seule. Le garder a part
-# evite qu'une montee de version de Streamlit casse le pipeline, et
-# inversement.
-#
-# Installation :
+# Le tableau de bord, a part des deux autres environnements : il ne fait que
+# lire marts, et une montee de Streamlit ne doit pas toucher au pipeline.
 #
 #   python -m venv venv-dashboard
 #   ./venv-dashboard/bin/pip install -r requirements-dashboard.txt
-#
-# Lancement :
-#
 #   ./venv-dashboard/bin/streamlit run dashboard/app.py
 
 streamlit==1.61.1

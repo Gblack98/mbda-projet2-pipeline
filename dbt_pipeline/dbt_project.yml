@@ -20,9 +20,8 @@ models:
       +schema: staging
     marts:
       +materialized: table
-    # Couche decisionnelle : agregations, indicateurs, comparaisons dans le
-    # temps. Materialisee dans marts, a cote du modele en etoile, pour que la
-    # restitution n'ait qu'un seul dataset a brancher.
+    # Agregations et indicateurs, dans marts a cote du modele en etoile :
+    # la restitution n'a ainsi qu'un seul dataset a brancher.
     analytique:
       +materialized: table
 

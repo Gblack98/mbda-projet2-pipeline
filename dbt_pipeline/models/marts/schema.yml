@@ -11,10 +11,9 @@ models:
           - not_null
   - name: dim_instrument
     description: >
-      Un instrument par ligne : 41 matières premières, actions et indices
-      suivis quotidiennement. categorie_export rattache le secteur à une
-      catégorie d'export Banque Mondiale (peut être nul pour les secteurs
-      sans équivalent, ex. Telecoms, Actions, Volatilite).
+      Un instrument par ligne : 41 matières premières, actions et indices.
+      categorie_export rattache le secteur à une catégorie Banque Mondiale,
+      nul pour les secteurs sans équivalent (Telecoms, Actions, Volatilite).
     columns:
       - name: instrument_id
         tests:
@@ -40,10 +39,9 @@ models:
                 values: ['arrime', 'gere', 'flottant', 'reference']
   - name: fct_exportations_pays
     description: >
-      Table de faits annuelle : part de chaque catégorie dans les
-      exportations d'un pays. Grain pays x catégorie x année, distinct de
-      fct_cotation_journaliere — les deux tables de faits ne se joignent
-      jamais directement (voir docs/questions-metier.md).
+      Table de faits annuelle : part de chaque catégorie dans les exportations
+      d'un pays. Grain pays x catégorie x année. Ne se joint jamais
+      directement à fct_cotation_journaliere, le grain est incompatible.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [pays, annee, categorie_export]
@@ -66,10 +64,9 @@ models:
           - not_null
   - name: fct_cotation_journaliere
     description: >
-      Table de faits quotidienne : un instrument, un jour. cloture_eur
-      convertit la clôture native (après division des devises cotées en
-      centimes) en euros via dim_devise ; variation_pct est la variation
-      en % par rapport à la clôture native du jour de bourse précédent.
+      Table de faits quotidienne : un instrument, un jour. cloture_eur passe la
+      clôture native en euros via dim_devise, après division des cotations en
+      centimes. variation_pct compare à la clôture native de la séance d'avant.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [date_cotation, instrument_id]
@@ -101,11 +98,8 @@ models:
                 values: ['USD', 'USX', 'EUR', 'GBp', 'GBP', 'ZAc', 'CAD', 'JPY']
       - name: variation_exploitable
         description: >
-          Faux quand variation_pct n'est pas interprétable comme un rendement,
-          c'est-à-dire au premier jour coté d'un instrument et dès qu'une des
-          deux clôtures comparées n'est pas strictement positive. Le seul cas
-          négatif de l'historique est le WTI le 2020-04-20. Les lignes restent
-          dans la table, la couche analytique s'en sert pour les compter et
-          publier une volatilité avec et sans.
+          Faux au premier jour coté d'un instrument, et dès qu'une des deux
+          clôtures comparées n'est pas positive. Seul cas négatif de
+          l'historique : le WTI le 2020-04-20.
         tests:
           - not_null

@@ -1,15 +1,10 @@
-# Environnement de l'ordonnanceur, separe de requirements.txt.
+# L'ordonnanceur seul. Airflow et dbt ne cohabitent pas, leurs versions de
+# google-cloud-* sont incompatibles : chacun son venv.
 #
-# Airflow et dbt ne peuvent pas cohabiter : ils exigent des versions
-# incompatibles de google-cloud-*. Chacun son venv. Le DAG appelle dbt par le
-# chemin explicite de son propre venv, jamais par le PATH.
+# Teste avec Airflow 2.9.3 sous Python 3.12. Le DAG s'importe aussi sous 3.x,
+# voir docs/architecture.md pour les ecarts entre les deux majeures.
 #
-# Version verifiee du DAG : Airflow 2.9.3 sous Python 3.12.
-# Airflow 3.x l'importe aussi, mais les deux majeures different (BashOperator
-# deplace dans le provider standard, cle `ts` retiree du contexte des
-# callbacks). Voir docs/architecture.md, section Versions d'Airflow.
-#
-# Installation, le fichier de contraintes n'est pas optionnel :
+# Le fichier de contraintes n'est pas optionnel :
 #
 #   python -m venv venv-airflow
 #   ./venv-airflow/bin/pip install -r requirements-airflow.txt \
