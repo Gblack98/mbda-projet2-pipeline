@@ -192,9 +192,7 @@ def couverture() -> pd.DataFrame:
 
 if __name__ == "__main__":
     # Verification hors Streamlit : les droits sont-ils ceux qu'on croit ?
-    creds = _identifiants.__wrapped__() if hasattr(_identifiants, "__wrapped__") \
-        else _identifiants()
-    bq = bigquery.Client(project=PROJET, credentials=creds)
+    bq = bigquery.Client(project=PROJET, credentials=_identifiants())
     print("compte :", json.load(open(os.path.expanduser(
         os.environ.get("MBDA_DASHBOARD_KEYFILE",
                        "~/.gcp/mbda-dashboard-ro.json"))))["client_email"])

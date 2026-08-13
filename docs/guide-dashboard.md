@@ -3,9 +3,10 @@
 Ce guide sert à construire les cinq pages du tableau de bord, pas à pas.
 
 La partie technique ingrate est déjà faite : la connexion à BigQuery, le compte
-de service, les droits, le cache, la coquille de l'application et les filtres.
-Il reste la partie intéressante, celle qui demande du jugement : choisir le bon
-graphique, la bonne couleur, la bonne phrase.
+de service, les droits, le cache et une fonction de lecture par table. Il reste
+tout le tableau de bord lui-même, c'est à dire la partie qui demande du
+jugement : la navigation, les filtres, le choix du graphique, de la couleur et
+de la phrase.
 
 ---
 
@@ -23,10 +24,10 @@ Puis `http://localhost:8501`.
 page.
 
 **Une exception qui fait perdre du temps** : Streamlit ne surveille que le
-fichier principal, `app.py`. Les pages sont dans `dashboard/questions/`, donc
-importées comme modules, et Python les garde en mémoire. Modifier une page
-demande donc de **redémarrer le serveur** (Ctrl+C puis relancer la commande).
-Sinon on modifie le fichier et l'écran ne bouge pas.
+fichier principal et les pages d'un dossier `pages/`. Un module importé à côté,
+comme `donnees.py`, est gardé en mémoire par Python. Le modifier demande donc de
+**redémarrer le serveur** (Ctrl+C puis relancer la commande). Sinon on modifie le
+fichier et l'écran ne bouge pas.
 
 **La clé de connexion** n'est pas dans le dépôt, c'est volontaire. Elle est
 attendue à `~/.gcp/mbda-dashboard-ro.json`, ou dans la variable
@@ -76,24 +77,21 @@ qui parle à l'entrepôt, et le cache s'applique automatiquement.
 Le cache dure dix minutes. Le bouton *Rafraîchir les données*, en bas du volet
 de gauche, le vide.
 
-### La coquille
+### Le point d'entrée
 
-`dashboard/app.py` tient la navigation et les filtres. Il n'y a normalement pas
-à y toucher.
+`dashboard/app.py` ne fait aujourd'hui qu'une chose : vérifier que la lecture de
+BigQuery fonctionne et laisser parcourir les tables disponibles. C'est un point
+de départ, pas une structure imposée.
 
-Chaque page est un fichier dans `dashboard/questions/` et expose trois choses :
+L'organisation du tableau de bord est libre. Streamlit propose deux voies :
 
-```python
-TITRE = "La question, telle qu'elle s'affiche"
-REPONSE = "Une phrase qui donne la réponse"
-FILTRES = ["annees", "classes", "mesure"]   # facultatif
+- **Une page unique**, tout dans `app.py`, avec une liste dans le volet de
+  gauche pour passer d'une question à l'autre.
+- **Plusieurs pages**, un fichier par question dans un dossier `pages/` que
+  Streamlit détecte tout seul et transforme en menu.
 
-def rendre(filtres):
-    ...   # c'est ici qu'on travaille
-```
-
-Les cinq fichiers existent déjà et chargent leurs données. Ils affichent un
-tableau brut en attendant les graphiques.
+La seconde est plus simple à faire vivre quand les cinq questions grossissent.
+Dans les deux cas, les fonctions de `donnees.py` sont les mêmes.
 
 ---
 
@@ -251,19 +249,20 @@ répond à une question, et il se laisse interroger.
 
 ### Les filtres
 
-Ils sont déjà dans `app.py`, dans le volet de gauche, et s'appliquent à la page
-entière. Une page déclare ceux qu'elle utilise :
+Ils restent à écrire. Les placer dans le volet de gauche, avec `st.sidebar`, et
+les appliquer à la page entière plutôt qu'à un seul graphique.
 
-```python
-FILTRES = ["annees", "classes", "mesure"]
-```
+Quatre filtres méritent d'exister, vu les tables disponibles :
 
-| Nom | Ce qu'il donne dans `filtres` |
-|---|---|
-| `annees` | un couple `(début, fin)` |
-| `classes` | une liste de classes d'actif |
-| `mesure` | `filtres["hors_anomalie"]`, vrai ou faux |
-| `annee_export` | une année |
+| Filtre | Brique Streamlit | Ce qu'il découpe |
+|---|---|---|
+| Période | `st.slider` sur un couple d'années | toutes les tables annuelles |
+| Classe d'actif | `st.multiselect` | volatilité, KPI par instrument |
+| Mesure | `st.radio`, avec ou sans l'anomalie de prix | volatilité, tension |
+| Année | `st.selectbox` | exportations |
+
+Le filtre « mesure » sert à basculer entre `volatilite` et
+`volatilite_hors_anomalie`, les deux colonnes expliquées plus haut.
 
 **Ne jamais mettre un filtre dans une carte de graphique.** Tout ce qui filtre
 plusieurs visuels va au même endroit, en haut ou sur le côté.
