@@ -1,13 +1,7 @@
--- Question 3 : quel pays a le panier d'exportation le plus expose, et comment
--- cette exposition bouge dans le temps.
---
--- part_exportations est deja une part en pourcentage : les ecarts d'une annee
--- sur l'autre se lisent donc en points, pas en pourcentage de pourcentage.
--- Les deux sont fournis, l'ecart en points est celui a citer.
---
--- Les annees ne se suivent pas toujours : la Banque Mondiale laisse des trous
--- selon les pays. lag() porte sur l'annee precedente presente dans les donnees,
--- d'ou la colonne annee_precedente qui dit sur quoi la comparaison porte.
+-- Question 3, avec l'evolution dans le temps.
+-- part_exportations est deja un pourcentage : citer l'ecart en points.
+-- La Banque Mondiale laisse des trous dans les annees, d'ou la colonne
+-- annee_precedente qui dit sur quoi la comparaison porte.
 
 with classe as (
     select

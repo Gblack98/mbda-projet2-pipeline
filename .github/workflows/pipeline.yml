@@ -1,13 +1,8 @@
 name: Pipeline quotidien
 
-# Seul declencheur planifie du projet : il tourne sans machine allumee. Le DAG
-# Airflow couvre le meme perimetre mais reste en declenchement manuel, sinon
-# deux WRITE_TRUNCATE concurrents ecriraient les memes tables.
-#
-# 18h37 et non 18h00 : GitHub met les workflows planifies en file d'attente
-# quand la charge est forte, et la charge est maximale en debut d'heure. Une
-# execution du 2026-08-07 lancee a 18h59 n'a demarre que le lendemain a 11h09.
-# Une minute decalee reduit l'attente sans rien changer au calendrier.
+# Seul declencheur planifie du projet, le DAG Airflow reste en manuel.
+# 18h37 et pas 18h00 : GitHub met les workflows en file d'attente en debut
+# d'heure. Un run lance a 18h59 le 2026-08-07 n'a demarre que 16 h plus tard.
 on:
   schedule:
     - cron: "37 18 * * 1-5"
@@ -24,7 +19,17 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      # dbt-core tire dbt-core-experimental-parser, dont le build telecharge un
+      # binaire depuis GitHub. Ce telechargement a coupe le 12 aout et fait
+      # tomber toute l'execution. D'ou les reprises, comme dans common/reseau.py.
+      - name: Dependances
+        run: |
+          for essai in 1 2 3; do
+            pip install -r requirements.txt && exit 0
+            echo "Installation en echec, tentative $essai sur 3."
+            sleep 15
+          done
+          exit 1
 
       - name: Cle de service
         env:
@@ -70,7 +75,7 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           from: Pipeline MBDA
           to: ${{ secrets.MAIL_TO }}
-          subject: "Echec du pipeline — ${{ github.run_id }}"
+          subject: "Echec du pipeline, run ${{ github.run_id }}"
           body: |
             L'execution du ${{ github.run_started_at }} a echoue.
 

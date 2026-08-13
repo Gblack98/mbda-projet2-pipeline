@@ -75,10 +75,8 @@ from with_variation
 select
     * except (cloture_precedente),
     round((cloture / nullif(cloture_precedente, 0) - 1) * 100, 4) as variation_pct,
-    -- Une variation en pourcentage suppose deux clotures de meme signe. Le WTI
-    -- a cote -37,63 le 2020-04-20, seule cloture negative de l'historique : le
-    -- calcul sort -305 % ce jour-la puis -126 % le lendemain, ce qui n'est pas
-    -- un rendement. Les deux lignes restent dans la table, ce drapeau permet de
-    -- les compter et de les ecarter d'une moyenne ou d'un ecart-type.
+    -- Le WTI a cote -37,63 le 2020-04-20. Entre clotures de signes opposes,
+    -- le pourcentage ne veut rien dire (-305 % puis -126 %). Les lignes
+    -- restent, ce drapeau sert a les ecarter d'une moyenne.
     coalesce(cloture > 0 and cloture_precedente > 0, false) as variation_exploitable
 from precedente

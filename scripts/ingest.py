@@ -1,8 +1,7 @@
 """Ingestion complete sans ordonnanceur.
 
-Meme perimetre et memes controles que le DAG Airflow. C'est ce script que
-lance le workflow GitHub Actions, donc le chemin qui tourne en production :
-les controles de fin ne sont pas decoratifs, ils decident du code de sortie.
+Meme perimetre et memes controles que le DAG. C'est ce script que lance
+GitHub Actions, donc celui qui tourne vraiment tous les soirs.
 """
 
 import os

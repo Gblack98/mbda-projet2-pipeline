@@ -1,13 +1,7 @@
--- Indicateurs annuels par instrument : la table de synthese sur laquelle
--- s'appuient les comparaisons d'une annee sur l'autre.
---
--- Deux performances sont calculees. Celle en devise de cotation isole le
--- comportement de l'actif. Celle en euros y ajoute l'effet de change, c'est
--- le rendement qu'aurait vu un investisseur de la zone euro. Les citer l'une
--- pour l'autre est l'erreur classique, d'ou les deux colonnes distinctes.
---
--- L'annee en cours est incomplete par construction : jours_cotes le dit, et
--- annee_complete permet de l'ecarter d'une comparaison.
+-- Indicateurs annuels par instrument.
+-- Deux performances : en devise de cotation, c'est l'actif seul ; en euros,
+-- le change est dedans. Ne pas citer l'une pour l'autre.
+-- L'annee en cours est forcement incomplete, voir annee_complete.
 
 with base as (
     select
