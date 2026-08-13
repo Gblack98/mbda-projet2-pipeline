@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-import requests
+from . import reseau
 
 URL = "https://api.worldbank.org/v2/country/{}/indicator/{}"
 
@@ -11,8 +11,12 @@ def recuperer(pays, indicateurs, depuis=2015):
     lignes = []
 
     for code, categorie in indicateurs.items():
-        reponse = requests.get(URL.format(";".join(pays), code), timeout=60, params={
-            "format": "json", "date": f"{depuis}:{annee_max}", "per_page": 1000})
+        # 120 s : cette API est la plus lente des trois et c'est elle qui a
+        # fait tomber l'execution du 2026-08-11.
+        reponse = reseau.session().get(
+            URL.format(";".join(pays), code), timeout=120, params={
+                "format": "json", "date": f"{depuis}:{annee_max}",
+                "per_page": 1000})
         reponse.raise_for_status()
         corps = reponse.json()
         for r in corps[1] or []:

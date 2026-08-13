@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "airflow", "dags"))
 
-from common import config, controles, schemas
+from common import config, controles, reseau, schemas
 
 
 def test_tickers_uniques():
@@ -71,3 +71,19 @@ def test_barrick_cote_sous_son_symbole_actuel():
     # Barrick : correlation avec l'or de 0,215 au lieu de 0,655.
     assert "GOLD" not in config.TICKERS
     assert "B" in config.TICKERS
+
+
+def test_session_reprend_sur_erreur_reseau():
+    # Le chemin de production (scripts/ingest.py, lance par GitHub Actions) n'a
+    # pas les relances d'Airflow : la reprise doit vivre dans la session HTTP.
+    adaptateur = reseau.session().get_adapter("https://exemple.fr")
+    reprise = adaptateur.max_retries
+    assert reprise.total >= 2
+    assert reprise.read >= 2
+    assert reprise.backoff_factor > 0
+    assert 502 in reprise.status_forcelist and 429 in reprise.status_forcelist
+
+
+def test_session_porte_un_user_agent():
+    # Yahoo refuse les requetes sans en-tete User-Agent.
+    assert reseau.session().headers.get("User-Agent")

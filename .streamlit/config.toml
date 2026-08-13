@@ -1,0 +1,15 @@
+# Thème du tableau de bord. La palette a été vérifiée pour le daltonisme,
+# ne pas la changer sans revalider.
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f1f3f5"
+textColor = "#1a1a19"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
