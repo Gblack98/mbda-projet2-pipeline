@@ -55,20 +55,47 @@ N'en planifier qu'un : ils écrivent les mêmes tables en `WRITE_TRUNCATE`.
 
 ## Lancer
 
-Sans ordonnanceur :
+Une seule commande après le clone :
+
+```bash
+./demarrer.sh
+```
+
+Elle crée les trois environnements, installe les dépendances, construit les
+modèles dbt, lance les tests, puis ouvre :
+
+| Interface | Adresse |
+|---|---|
+| Airflow | http://localhost:8080 |
+| Documentation dbt | http://localhost:8081 |
+| Tableau de bord | http://localhost:8501 |
+
+L'identifiant Airflow est `admin`, le mot de passe s'affiche au démarrage.
+`Ctrl+C` arrête les trois services.
+
+**Il faut la clé de service BigQuery.** Elle n'est pas dans le dépôt et ne doit
+pas y être. Le script l'attend dans `~/.gcp/mbda-projet2-sa.json`, ou à
+l'endroit indiqué par `MBDA_KEYFILE` :
+
+```bash
+MBDA_KEYFILE=/chemin/vers/cle.json ./demarrer.sh
+```
+
+Deux variantes :
+
+```bash
+./demarrer.sh --complet    # lance aussi l'ingestion des trois sources avant dbt
+./demarrer.sh --rapide     # saute dbt, quand tout est déjà construit
+```
+
+Le script est idempotent, il ne réinstalle que ce qui manque. Trois
+environnements séparés parce qu'Airflow, dbt et Streamlit exigent des versions
+incompatibles de `google-cloud-*`.
+
+Sans passer par le script :
 
 ```bash
 pip install -r requirements.txt
 python scripts/ingest.py          # remplit raw, puis contrôle ce qui est chargé
 cd dbt_pipeline && dbt build      # construit marts et lance les tests
-```
-
-Avec Airflow, qui vit dans son propre environnement — ses versions de
-`google-cloud-*` sont incompatibles avec celles de dbt :
-
-```bash
-python -m venv venv-airflow
-./venv-airflow/bin/pip install -r requirements-airflow.txt \
-  -c https://raw.githubusercontent.com/apache/airflow/constraints-2.9.3/constraints-3.12.txt
-./lancer_airflow.sh               # interface sur http://localhost:8080
 ```
