@@ -30,7 +30,7 @@ par le `PATH`, et jamais par `subprocess.run(["dbt"])`.
 
 `airflow standalone` relance ses sous-processus via le `PATH` : pointer le
 binaire ne suffit pas, il faut `export PATH="$VENV/bin:$PATH"`. C'est ce que
-fait `lancer_airflow.sh`.
+fait `demarrer.sh`.
 
 **Airflow 2.x et 3.x ne sont pas interchangeables.** L'équipe tourne sur les
 deux. Deux écarts déjà rencontrés :
