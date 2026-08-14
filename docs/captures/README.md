@@ -12,24 +12,20 @@ qui compte.
 pipeline pour que les données soient fraîches et les tables présentes :
 
 ```bash
-export AIRFLOW_HOME=$PWD/airflow_home
-export AIRFLOW__CORE__DAGS_FOLDER=$PWD/airflow/dags
-export PATH=/chemin/vers/venv-airflow/bin:$PATH
-airflow dags test ingest_market_data
+./demarrer.sh --complet
 ```
 
 ---
 
 ## Déjà dans le dépôt, rien à faire
 
-| Fichier | Source | Section du rapport |
-|---|---|---|
-| `01-architecture.png` | `docs/img/architecture.png` | Architecture technique |
-| `02-datasets.png` | `docs/img/datasets.png` | Les trois datasets |
-| `04-schema-etoile.png` | `docs/img/schema_etoile.png` | Modèle dimensionnel |
+| Fichier | Section du rapport |
+|---|---|
+| `01-architecture.png` | Architecture technique |
+| `02-datasets.png` | Les trois datasets |
+| `04-schema-etoile.png` | Modèle dimensionnel |
 
-Ces trois images sont générées par `python docs/diagramme/rendre.py` et
-`python docs/diagramme/frames.py`. Les régénérer si le modèle change.
+Pour les refaire si le modèle change, voir `docs/architecture.drawio`.
 
 ---
 
@@ -57,13 +53,8 @@ Doit montrer le nombre de lignes (103 104), la taille, et surtout le champ
 lignes : `Completed successfully` et `PASS=87 WARN=0 ERROR=0`.
 *Preuve que les 68 tests passent.*
 
-**`07-dbt-docs-lineage.png`** — Graphe de dépendances. Le générer puis le servir :
-
-```bash
-cd dbt_pipeline && ../venv/bin/dbt docs generate && ../venv/bin/dbt docs serve
-```
-
-Ouvrir `http://localhost:8080`, cliquer sur l'icône en bas à droite pour le
+**`07-dbt-docs-lineage.png`** — Graphe de dépendances. `./demarrer.sh` le sert
+sur `http://localhost:8081`. Cliquer sur l'icône en bas à droite pour le
 *lineage graph*, et cadrer sur l'enchaînement sources → staging → marts →
 analytique.
 *C'est la plus parlante du dossier : elle montre les 17 modèles et leurs liens.*
@@ -72,7 +63,7 @@ analytique.
 
 ## À prendre dans Airflow
 
-Lancer l'interface avec `./lancer_airflow.sh`, puis `http://localhost:8080`.
+Lancer l'interface avec `./demarrer.sh`, puis `http://localhost:8080`.
 
 **`08-airflow-graphe.png`** — Vue *Graph* du DAG `ingest_market_data`, groupes
 `marches`, `referentiels` et `transformation` **dépliés**, les 16 tâches visibles.
@@ -174,17 +165,13 @@ where paire_id = 'barrick_or' order by annee
 
 | Fichier | Contenu | Origine |
 |---|---|---|
-| `01-architecture.png` | la chaîne de bout en bout | généré par `rendre.py` |
-| `architecture.png` | la même, en 3420 × 840 | export manuel |
-| `architecture_poster.png` | la même, en 4080 × 2300 | export manuel |
-| `pipeline.gif` | la chaîne animée | export manuel |
-| `02-datasets.png` | les trois datasets BigQuery | généré par `rendre.py` |
-| `04-schema-etoile.png` | le modèle dimensionnel | généré par `rendre.py` |
+| `01-architecture.png` | la chaîne de bout en bout | export drawio |
+| `architecture_poster.png` | la même, en 4080 × 2300, pour l'impression | export drawio |
+| `pipeline.gif` | la chaîne animée | export drawio |
+| `02-datasets.png` | les trois datasets BigQuery | export drawio |
+| `04-schema-etoile.png` | le modèle dimensionnel | export drawio |
 | `dag_airflow.png` | le DAG, 16 tâches en vert | capture Airflow |
 | `dbt-dag.png` | le lineage dbt complet | capture dbt docs |
-
-Les trois versions de l'architecture font double emploi. Garder celle qui rend
-le mieux à l'impression et retirer les autres avant de rendre.
 
 ## Ce qui manque encore
 

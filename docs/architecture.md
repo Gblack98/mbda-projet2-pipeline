@@ -1,8 +1,8 @@
 # Architecture
 
-![Pipeline](img/pipeline.gif)
+![Pipeline](captures/pipeline.gif)
 
-(version statique : `img/architecture.png`)
+(version statique : `captures/01-architecture.png`)
 
 ## Sources
 
@@ -77,7 +77,7 @@ contrôles : les deux appellent `common/controles.py`.
 
 ## Les trois datasets
 
-![Datasets](img/datasets.png)
+![Datasets](captures/02-datasets.png)
 
 Une étape du pipeline par dataset, 17 Mo au total.
 
@@ -97,7 +97,7 @@ le pipeline pour que `raw` soit peuplée.
 
 ## Modèle
 
-![Modèle](img/schema_etoile.png)
+![Modèle](captures/04-schema-etoile.png)
 
 Grain de la table de faits : un instrument, un jour.
 
@@ -150,15 +150,13 @@ Deux déclencheurs couvrent le même périmètre. Un seul doit être planifié �
 fois : ils écrivent les mêmes tables en `WRITE_TRUNCATE`, et deux exécutions
 simultanées s'écraseraient l'une l'autre.
 
-- **Le DAG `ingest_market_data`** (Airflow), planifié les jours ouvrés à 18h.
-  C'est le déclencheur actif. Il couvre tout le pipeline, ingestion puis
-  groupe `transformation`. Il suppose un Airflow lancé, d'où
-  `lancer_airflow.sh`, et un accès à `MBDA_KEYFILE`.
-- **`.github/workflows/pipeline.yml`**, réduit au déclenchement manuel
-  (*Actions* puis *Run workflow*). Il enchaîne `scripts/ingest.py` puis
-  `dbt build`, et envoie un mail si une étape échoue. Son bloc `schedule` est
-  commenté dans le fichier : le remettre, et désactiver le DAG, pour une
-  exécution autonome sans machine allumée.
+- **`.github/workflows/pipeline.yml`**, les jours ouvrés à 18h37. C'est le
+  déclencheur actif, et il tourne sans machine allumée. Il enchaîne
+  `scripts/ingest.py` puis `dbt build`, et envoie un mail si une étape échoue.
+- **Le DAG `ingest_market_data`** (Airflow), en `schedule=None`, donc
+  déclenchement manuel. Il couvre le même périmètre et sert à démontrer
+  l'orchestration. Il suppose un Airflow lancé, d'où `demarrer.sh`, et un
+  accès à `MBDA_KEYFILE`.
 
 ## Versions d'Airflow
 
@@ -195,13 +193,6 @@ fonctionne pas.
 
 ## Régénérer les schémas
 
-Les diagrammes sont des pages HTML capturées avec Chrome en mode headless.
-
-```bash
-python docs/diagramme/frames.py   # architecture animée + version statique
-python docs/diagramme/rendre.py   # modèle dimensionnel
-```
-
-`docs/diagramme/architecture.drawio` est une version éditable du même schéma :
-elle s'ouvre sur app.diagrams.net et s'exporte en GIF animé depuis
-`Fichier > Exporter > GIF animé`. Régénérée par `python docs/diagramme/drawio.py`.
+`docs/architecture.drawio` s'ouvre sur app.diagrams.net. Il s'exporte en PNG,
+ou en GIF animé depuis `Fichier > Exporter > GIF animé`. Les images produites
+vont dans `docs/captures/`.
