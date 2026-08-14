@@ -12,7 +12,11 @@ export MBDA_SMTP_USER="${MBDA_SMTP_USER:-}"
 export MBDA_SMTP_PASSWORD="${MBDA_SMTP_PASSWORD:-}"
 export MBDA_SMTP_TO="${MBDA_SMTP_TO:-}"
 
-VENV=/home/gblack98/Téléchargements/cedeao-remitflow/venv-airflow
+VENV="$PWD/venv-airflow"
+[ -x "$VENV/bin/airflow" ] || {
+  echo "venv-airflow absent. Lance ./demarrer.sh, il l'installe." >&2
+  exit 1
+}
 # standalone relance ses sous-processus via le PATH
 export PATH="$VENV/bin:$PATH"
 AIRFLOW="$VENV/bin/airflow"

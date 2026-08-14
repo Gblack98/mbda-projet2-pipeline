@@ -18,6 +18,7 @@ airflow_home/
 logs/
 
 # dbt
+.dbt/
 target/
 dbt_packages/
 logs/
