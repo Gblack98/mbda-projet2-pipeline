@@ -38,7 +38,7 @@ année, tension mensuelle, corrélations société / matière première, évolut
 des exportations, indicateurs annuels par instrument. Les chiffres du rapport
 sortent de ces tables, pas de calculs refaits dans l'outil de restitution.
 
-![Datasets](docs/img/datasets.png)
+![Datasets](docs/captures/02-datasets.png)
 
 Guide du tableau de bord : [docs/guide-dashboard.md](docs/guide-dashboard.md).
 Dossier de rédaction du rapport : [docs/dossier-rapport.md](docs/dossier-rapport.md).
