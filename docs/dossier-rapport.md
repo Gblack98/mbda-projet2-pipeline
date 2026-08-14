@@ -121,11 +121,11 @@ copie fidèle, le filtrage appartient à la couche de transformation.
 
 ## 5. L'architecture technique
 
-![Architecture](img/architecture.png)
+![Architecture](captures/01-architecture.png)
 
 Le pipeline suit trois étapes, une par dataset BigQuery.
 
-![Datasets](img/datasets.png)
+![Datasets](captures/02-datasets.png)
 
 ### `raw`, la copie fidèle
 
@@ -208,7 +208,7 @@ pipeline se répare seul à l'exécution suivante puisque l'extraction est compl
 
 ## 6. Le modèle dimensionnel
 
-![Modèle en étoile](img/schema_etoile.png)
+![Modèle en étoile](captures/04-schema-etoile.png)
 
 **Grain de la table de faits : un instrument, un jour.** C'est le grain le plus
 fin disponible dans la source, et il permet toutes les agrégations utiles :
