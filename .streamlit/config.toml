@@ -1,12 +1,24 @@
-# Thème du tableau de bord. La palette a été vérifiée pour le daltonisme,
-# ne pas la changer sans revalider.
+# Theme du tableau de bord. La palette de series a ete verifiee pour le
+# daltonisme, ne pas la changer sans revalider.
+#
+# Les deux themes sont definis, et « base » n'est plus impose : le lecteur
+# choisit dans Reglages puis Apparence. Les graphiques suivent, parce que
+# charte.habiller() lit st.context.theme et laisse les fonds transparents.
+
 [theme]
-base = "light"
+font = "sans serif"
+
+[theme.light]
 primaryColor = "#2a78d6"
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f1f3f5"
+secondaryBackgroundColor = "#f4f6f9"
 textColor = "#1a1a19"
-font = "sans serif"
+
+[theme.dark]
+primaryColor = "#6aa6e6"
+backgroundColor = "#0f141b"
+secondaryBackgroundColor = "#1a212b"
+textColor = "#e6e9ef"
 
 [server]
 headless = true
