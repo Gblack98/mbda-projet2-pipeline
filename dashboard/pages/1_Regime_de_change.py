@@ -1,7 +1,8 @@
 """Question 1 - Le regime de change protege-t-il de la volatilite ?
 
 Donnees : donnees.devises(). Palette et regles de mise en forme : voir
-docs/guide-dashboard.md, section 4.
+docs/questions-metier.md, section 1 (mapping regime -> couleur), et
+docs/guide-dashboard.md, section 4 (regles generales).
 """
 
 import os
@@ -14,12 +15,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import donnees  # noqa: E402
 
-# Palette fermee du projet (.streamlit/config.toml, docs/guide-dashboard.md).
+# Palette fermee du projet, mapping regime -> couleur de docs/questions-metier.md.
 BLEU = "#2a78d6"
+JAUNE = "#eda100"
 ORANGE = "#eb6834"
-VERT = "#1baf7a"
 
-COULEURS_REGIME = {"arrimé": BLEU, "géré": ORANGE, "flottant": VERT}
+COULEURS_REGIME = {"arrimé": BLEU, "géré": JAUNE, "flottant": ORANGE}
 LIBELLE_REGIME = {"arrime": "arrimé", "gere": "géré", "flottant": "flottant"}
 
 
