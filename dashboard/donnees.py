@@ -99,6 +99,32 @@ def volatilite_totale() -> pd.DataFrame:
         order by volatilite desc""")
 
 
+@st.cache_data(ttl=CACHE, show_spinner="Lecture de BigQuery…")
+def volatilite_classe_mois(mois: list) -> pd.DataFrame:
+    """Volatilite par classe d'actif, sur une fenetre de mois donnee.
+
+    Meme calcul que volatilite_totale, restreint aux mois passes (par
+    exemple mars et avril 2020 ensemble, question 5) : une donnee que les
+    tables d'agregation annuelles ne portent pas.
+    """
+    sql = f"""
+        select i.classe_actif,
+               stddev(f.variation_pct) as volatilite,
+               stddev(if(f.variation_exploitable, f.variation_pct, null))
+                   as volatilite_hors_anomalie
+        from {MARTS}.fct_cotation_journaliere f
+        join {MARTS}.dim_instrument i using (instrument_id)
+        where f.variation_pct is not null
+          and date_trunc(f.date_cotation, month) in unnest(@mois)
+        group by i.classe_actif
+        order by volatilite desc"""
+    config = bigquery.QueryJobConfig(query_parameters=[
+        bigquery.ArrayQueryParameter("mois", "DATE", mois),
+    ])
+    return client().query(sql, job_config=config).to_dataframe(
+        create_bqstorage_client=False)
+
+
 def tension() -> pd.DataFrame:
     return _lire(f"""
         select mois, annee, instruments, observations, observations_ecartees,
