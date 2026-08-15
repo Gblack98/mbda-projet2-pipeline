@@ -10,6 +10,8 @@ __pycache__/
 *.py[cod]
 venv/
 .venv/
+venv-airflow/
+venv-dashboard/
 
 # Airflow
 airflow_home/
@@ -30,5 +32,4 @@ docs/__pycache__/
 docs/diagramme/frames/
 
 # Tableau de bord
-venv-dashboard/
 .streamlit/secrets.toml
