@@ -97,7 +97,7 @@ le pipeline pour que `raw` soit peuplée.
 
 ## Modèle
 
-![Modèle](captures/04-schema-etoile.png)
+![Modèle en étoile](modele-etoile.svg)
 
 Grain de la table de faits : un instrument, un jour.
 

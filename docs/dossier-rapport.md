@@ -208,7 +208,7 @@ pipeline se répare seul à l'exécution suivante puisque l'extraction est compl
 
 ## 6. Le modèle dimensionnel
 
-![Modèle en étoile](captures/04-schema-etoile.png)
+![Modèle en étoile](modele-etoile.svg)
 
 **Grain de la table de faits : un instrument, un jour.** C'est le grain le plus
 fin disponible dans la source, et il permet toutes les agrégations utiles :
