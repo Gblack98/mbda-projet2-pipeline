@@ -25,7 +25,7 @@ pipeline pour que les données soient fraîches et les tables présentes :
 | `02-datasets.png` | Les trois datasets |
 | `04-schema-etoile.png` | Modèle dimensionnel |
 
-Pour les refaire si le modèle change, voir `docs/architecture.drawio`.
+`04-schema-etoile.png` est le rendu de `docs/modele-etoile.svg`, à modifier là. Les deux autres viennent de `docs/architecture.drawio`.
 
 ---
 
@@ -169,7 +169,7 @@ where paire_id = 'barrick_or' order by annee
 | `architecture_poster.png` | la même, en 4080 × 2300, pour l'impression | export drawio |
 | `pipeline.gif` | la chaîne animée | export drawio |
 | `02-datasets.png` | les trois datasets BigQuery | export drawio |
-| `04-schema-etoile.png` | le modèle dimensionnel | export drawio |
+| `04-schema-etoile.png` | le modèle dimensionnel, 2800 px | rendu de `docs/modele-etoile.svg` |
 | `dag_airflow.png` | le DAG, 16 tâches en vert | capture Airflow |
 | `dbt-dag.png` | le lineage dbt complet | capture dbt docs |
 
