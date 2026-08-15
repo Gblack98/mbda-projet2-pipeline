@@ -1,60 +1,49 @@
-"""Point d'entree du tableau de bord.
-
-Verifie que la lecture de BigQuery marche et laisse parcourir les tables.
-Le reste est a construire, voir docs/guide-dashboard.md.
+"""Point d'entree du tableau de bord : menu horizontal, une page par question.
 
     ./venv-dashboard/bin/streamlit run dashboard/app.py
 """
 
-import os
-import sys
-
 import streamlit as st
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-import donnees  # noqa: E402
-
-# Ce qui s'affiche dans la liste deroulante, et la fonction correspondante.
-TABLES = {
-    "dim_devise": donnees.devises,
-    "dim_instrument": donnees.instruments,
-    "agg_volatilite_classe_annee": donnees.volatilite_classe,
-    "agg_tension_mensuelle": donnees.tension,
-    "agg_correlation_instrument": donnees.correlations,
-    "agg_correlation_paire_annee": donnees.correlations_par_annee,
-    "agg_exportations_evolution": donnees.exportations,
-    "kpi_instrument_annee": donnees.kpi_instrument,
-}
-
 st.set_page_config(page_title="Matières premières et devises",
-                   page_icon="📊", layout="wide")
+                    page_icon="📊", layout="wide")
 
-st.title("Matières premières et devises")
-st.caption("Master 1 MBDA · UN-CHK · 2026")
+# Habillage du menu horizontal, avec la palette fermee du projet
+# (docs/questions-metier.md) : soulignement bleu sur l'onglet actif,
+# fond legerement teinte au survol.
+st.markdown("""
+<style>
+[data-testid="stHeader"] {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+[data-testid="stTopNavLink"] {
+    border-radius: 6px 6px 0 0;
+    border-bottom: 3px solid transparent;
+    margin: 0 2px;
+    transition: background-color 120ms ease;
+}
+[data-testid="stTopNavLink"]:hover {
+    background-color: #eaf1fb;
+}
+[data-testid="stTopNavLink"][aria-current="page"] {
+    background-color: #eaf1fb;
+    border-bottom: 3px solid #2a78d6;
+}
+[data-testid="stTopNavLink"][aria-current="page"] * {
+    color: #2a78d6 !important;
+    font-weight: 600;
+}
+</style>
+""", unsafe_allow_html=True)
 
-try:
-    c = donnees.couverture().iloc[0]
-except FileNotFoundError as err:
-    st.error(str(err))
-    st.stop()
+pages = [
+    st.Page("pages/0_Connexion.py", title="Connexion", icon="🔌", default=True),
+    st.Page("pages/1_Regime_de_change.py", title="Régime de change", icon="💱"),
+    st.Page("pages/2_Classe_actif.py", title="Classe d'actif", icon="📈"),
+    st.Page("pages/3_Exportations.py", title="Exportations", icon="🚢"),
+    st.Page("pages/4_Correlations.py", title="Corrélations", icon="🔗"),
+    st.Page("pages/5_Tension.py", title="Tension", icon="🌡️"),
+]
 
-st.markdown(
-    "La connexion à BigQuery est en place et le dataset `marts` est lisible. "
-    "Les pages du tableau de bord restent à construire : voir "
-    "`docs/guide-dashboard.md`.")
-
-g, d = st.columns(2)
-g.metric("Cotations", f"{int(c.lignes):,}".replace(",", " "))
-d.metric("Instruments", int(c.instruments))
-st.caption(f"Du {c.debut:%d/%m/%Y} au {c.fin:%d/%m/%Y}. "
-           "Lecture seule, dataset `marts`.")
-
-st.divider()
-
-nom = st.selectbox("Table", list(TABLES))
-st.dataframe(TABLES[nom](), width="stretch", hide_index=True)
-
-if st.button("Rafraîchir les données"):
-    st.cache_data.clear()
-    st.rerun()
+st.navigation(pages, position="top").run()
