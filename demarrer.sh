@@ -174,10 +174,14 @@ PIDS+=($!)
 MDP="$AIRFLOW_HOME/standalone_admin_password.txt"
 for _ in $(seq 1 40); do [ -f "$MDP" ] && break; sleep 1; done
 
-# Un DAG neuf arrive en pause. Le sortir evite d'avoir a chercher l'interrupteur
-# avant de pouvoir le declencher. Sans effet automatique : schedule=None.
-( export PATH="$VENV_AIRFLOW/bin:$PATH"
-  "$VENV_AIRFLOW/bin/airflow" dags unpause ingest_market_data ) >> "$JOURNAUX/airflow.log" 2>&1 || true
+# Le DAG reste en pause, volontairement. Sortir un DAG de pause ne fait pas
+# que le rendre declenchable : l'ordonnanceur rattrape aussitot les executions
+# en attente. Le 2026-08-15, un run planifie du 13 aout, herite de l'epoque ou
+# le DAG avait un calendrier, est reparti tout seul et a reecrit les tables
+# raw sans que personne ne l'ait demande.
+#
+# Pour le lancer, l'interrupteur est en haut a gauche dans l'interface, puis
+# le bouton de declenchement. Un geste, et il est conscient.
 
 cat <<EOF
 
