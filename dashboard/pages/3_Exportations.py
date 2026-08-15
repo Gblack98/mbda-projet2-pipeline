@@ -44,8 +44,6 @@ def habiller(fig, hauteur=420):
     return fig
 
 
-st.set_page_config(page_title="Exportations", page_icon="📊", layout="wide")
-
 st.title("Quel pays a le panier d'exportation le plus exposé ?")
 st.caption(
     "Le Nigeria dépend de l'énergie à plus de 88 % ; la Mauritanie et le "

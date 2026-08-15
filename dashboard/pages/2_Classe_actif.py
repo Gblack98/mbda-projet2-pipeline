@@ -40,8 +40,6 @@ def habiller(fig, hauteur=420):
     return fig
 
 
-st.set_page_config(page_title="Classe d'actif", page_icon="📊", layout="wide")
-
 st.title("Quelle classe d'actif est la plus volatile ?")
 st.caption(
     "Sur l'ensemble de la période, ce sont les indices, portés par le VIX. "
