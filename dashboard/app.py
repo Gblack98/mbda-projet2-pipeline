@@ -1,39 +1,57 @@
 """Point d'entree du tableau de bord : menu horizontal, une page par question.
 
     ./venv-dashboard/bin/streamlit run dashboard/app.py
+
+Le theme se choisit dans Reglages puis Apparence. Les couleurs d'habillage du
+menu sont calculees ici a partir du theme actif : en dur, le bandeau restait
+clair au-dessus d'une page sombre.
 """
+
+import os
+import sys
 
 import streamlit as st
 
-st.set_page_config(page_title="Matières premières et devises",
-                    page_icon="📊", layout="wide")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Habillage du menu horizontal, avec la palette fermee du projet
-# (docs/questions-metier.md) : soulignement bleu sur l'onglet actif,
-# fond legerement teinte au survol.
-st.markdown("""
+import charte  # noqa: E402
+
+st.set_page_config(page_title="Matières premières et devises",
+                   page_icon="📊", layout="wide")
+
+_sombre = charte.sombre()
+_fond = "#141b24" if _sombre else "#f8fafc"
+_bord = "#242c37" if _sombre else "#e2e8f0"
+_survol = "#1c2733" if _sombre else "#eaf1fb"
+_actif = "#6aa6e6" if _sombre else charte.BLEU
+
+st.markdown(f"""
 <style>
-[data-testid="stHeader"] {
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-}
-[data-testid="stTopNavLink"] {
+[data-testid="stHeader"] {{
+    background-color: {_fond};
+    border-bottom: 1px solid {_bord};
+}}
+[data-testid="stTopNavLink"] {{
     border-radius: 6px 6px 0 0;
     border-bottom: 3px solid transparent;
     margin: 0 2px;
     transition: background-color 120ms ease;
-}
-[data-testid="stTopNavLink"]:hover {
-    background-color: #eaf1fb;
-}
-[data-testid="stTopNavLink"][aria-current="page"] {
-    background-color: #eaf1fb;
-    border-bottom: 3px solid #2a78d6;
-}
-[data-testid="stTopNavLink"][aria-current="page"] * {
-    color: #2a78d6 !important;
+}}
+[data-testid="stTopNavLink"]:hover {{
+    background-color: {_survol};
+}}
+[data-testid="stTopNavLink"][aria-current="page"] {{
+    background-color: {_survol};
+    border-bottom: 3px solid {_actif};
+}}
+[data-testid="stTopNavLink"][aria-current="page"] * {{
+    color: {_actif} !important;
     font-weight: 600;
-}
+}}
+/* les chiffres cles s'alignent mieux en chiffres tabulaires */
+[data-testid="stMetricValue"] {{
+    font-variant-numeric: tabular-nums;
+}}
 </style>
 """, unsafe_allow_html=True)
 
