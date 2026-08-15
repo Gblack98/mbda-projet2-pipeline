@@ -37,8 +37,6 @@ def habiller(fig, hauteur=420):
     return fig
 
 
-st.set_page_config(page_title="Tension", page_icon="📊", layout="wide")
-
 st.title("Quelles ont été les périodes de tension ?")
 st.caption(
     "Deux mois seulement dépassent le seuil, tous les deux au premier "

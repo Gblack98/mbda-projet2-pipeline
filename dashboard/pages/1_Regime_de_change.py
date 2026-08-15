@@ -32,8 +32,6 @@ def habiller(fig, hauteur=420):
     return fig
 
 
-st.set_page_config(page_title="Régime de change", page_icon="📊", layout="wide")
-
 st.title("Le régime de change protège-t-il de la volatilité ?")
 st.caption(
     "Les monnaies arrimées affichent une volatilité nulle, "

@@ -37,8 +37,6 @@ def habiller(fig, hauteur=420):
     return fig
 
 
-st.set_page_config(page_title="Corrélations", page_icon="📊", layout="wide")
-
 st.title("Les sociétés extractives suivent-elles leur matière ?")
 st.caption(
     "Oui, et le classement se lit tout seul : les minières de l'or en tête, "
