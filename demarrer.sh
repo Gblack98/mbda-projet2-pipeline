@@ -89,6 +89,57 @@ installer "$VENV"           requirements.txt           dbt       "ingestion et d
 installer "$VENV_DASHBOARD" requirements-dashboard.txt streamlit "tableau de bord"
 installer "$VENV_AIRFLOW"   requirements-airflow.txt   airflow   "Airflow" -c "$CONTRAINTES"
 
+# ------------------------------------------------------------- setproctitle
+#
+# Sur macOS, setproctitle (dependance d'apache-airflow, utilisee par gunicorn
+# et par plusieurs modules Airflow pour renommer les process) appelle des
+# fonctions CoreFoundation/os_log juste apres fork(), avant exec(). macOS ne
+# supporte pas cet appel dans un process multi-thread : chaque worker
+# segfaultait aussitot et gunicorn en relancait un autre en boucle. Le 18
+# aout, plus de 12 000 crashes en quelques secondes. Airflow importe
+# setproctitle directement a plusieurs endroits (dag_processing/manager.py,
+# executors/local_executor.py, etc.) sans try/except : le desinstaller casse
+# ces imports. On le remplace donc par un stub qui offre la meme API sans
+# toucher au titre du process. Linux n'est pas concerne, setproctitle y
+# fonctionne normalement : on ne touche a rien hors macOS.
+if [ "$(uname -s)" = "Darwin" ]; then
+  if ! "$VENV_AIRFLOW/bin/python" -c "
+import setproctitle, sys
+sys.exit(0 if getattr(setproctitle, '__version__', '') == '0.0.0-stub' else 1)
+" 2>/dev/null; then
+    info "setproctitle : remplacement par un stub (bug fork-safety macOS, cf commentaire)"
+    SITE_AIRFLOW="$("$VENV_AIRFLOW/bin/python" -c 'import site; print(site.getsitepackages()[0])')"
+    rm -rf "$SITE_AIRFLOW/setproctitle" "$SITE_AIRFLOW"/setproctitle-*.dist-info
+    mkdir -p "$SITE_AIRFLOW/setproctitle"
+    cat > "$SITE_AIRFLOW/setproctitle/__init__.py" <<'PYEOF'
+"""Stub sans effet, a la place du paquet setproctitle natif.
+
+Le vrai paquet appelle CoreFoundation/os_log juste apres fork(), avant
+exec(), ce qui segfault sur macOS recent (process multi-thread, appel non
+fork-safe). Voir le commentaire dans demarrer.sh.
+"""
+
+__version__ = "0.0.0-stub"
+
+
+def setproctitle(title):
+    pass
+
+
+def getproctitle():
+    return "python"
+
+
+def setthreadtitle(title):
+    pass
+
+
+def getthreadtitle():
+    return ""
+PYEOF
+  fi
+fi
+
 # ---------------------------------------------------------------- profil dbt
 
 # Genere dans le projet, pas dans ~/.dbt : on ne touche pas au profil personnel
