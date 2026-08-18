@@ -183,6 +183,39 @@ for _ in $(seq 1 40); do [ -f "$MDP" ] && break; sleep 1; done
 # Pour le lancer, l'interrupteur est en haut a gauche dans l'interface, puis
 # le bouton de declenchement. Un geste, et il est conscient.
 
+# Purge de securite : un DagRun de cette meme epoque peut encore trainer en
+# base, pret a repartir des qu'un humain depausera le DAG depuis l'interface.
+# La pause n'empeche que l'ordonnancement, pas l'execution d'un run deja en
+# file. On neutralise donc tout run non termine a chaque demarrage, qu'il y
+# en ait un ou pas.
+( export PATH="$VENV_AIRFLOW/bin:$PATH"
+  "$VENV_AIRFLOW/bin/python" - <<'PY'
+from airflow.models import DagRun, TaskInstance
+from airflow.utils.session import create_session
+from airflow.utils.state import DagRunState, TaskInstanceState
+
+DAG_ID = "ingest_market_data"
+
+with create_session() as session:
+    runs = [
+        run_id
+        for (run_id,) in session.query(DagRun.run_id)
+        .filter(DagRun.dag_id == DAG_ID)
+        .filter(DagRun.state.in_([DagRunState.QUEUED, DagRunState.RUNNING]))
+        .all()
+    ]
+    if runs:
+        session.query(TaskInstance).filter(
+            TaskInstance.dag_id == DAG_ID, TaskInstance.run_id.in_(runs)
+        ).update({TaskInstance.state: TaskInstanceState.FAILED}, synchronize_session=False)
+        session.query(DagRun).filter(
+            DagRun.dag_id == DAG_ID, DagRun.run_id.in_(runs)
+        ).update({DagRun.state: DagRunState.FAILED}, synchronize_session=False)
+        session.commit()
+        print(f"{len(runs)} DagRun(s) residuel(s) neutralise(s) : {', '.join(runs)}")
+PY
+) >> "$JOURNAUX/airflow.log" 2>&1 || true
+
 cat <<EOF
 
   Airflow     http://localhost:8080     admin / $( [ -f "$MDP" ] && cat "$MDP" || echo "voir $MDP" )
