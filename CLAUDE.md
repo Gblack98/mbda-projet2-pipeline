@@ -54,17 +54,13 @@ Projet `crucial-bonsai-418120`, région EU, datasets `raw`, `marts_staging`,
 
 ## Ordonnancement
 
-**Un seul déclencheur planifié à la fois.** Les deux écrivent les mêmes tables
-en `WRITE_TRUNCATE`, deux exécutions simultanées s'écraseraient.
+Projet terminé et soutenu (16/20, 2026-09-11) : plus de calendrier à faire
+tourner.
 
-- GitHub Actions, les jours ouvrés à 18h37, c'est le déclencheur actif. Il
-  tourne sans machine allumée.
-- Le DAG Airflow, `schedule=None`, déclenchement manuel. Sert à démontrer
-  l'orchestration.
-
-La minute décalée est volontaire : GitHub met les workflows planifiés en file
-quand la charge est forte, et elle est maximale en début d'heure. Un run lancé
-à 18h59 a déjà attendu 16 heures.
+- Les workflows GitHub Actions (`pipeline.yml`, `tests.yml`) ont été retirés
+  du dépôt. Plus aucune exécution automatique côté CI.
+- Le DAG Airflow, `schedule=None`, reste déclenchable manuellement pour
+  démontrer l'orchestration.
 
 **Ne pas relancer la recherche d'un ordonnanceur cloud gratuit.** Elle a été
 faite : GitLab exige une carte depuis 2021, Docker Hub est un registre et pas un
@@ -115,13 +111,10 @@ Oracle Cloud demande une carte. La consigne n'exige aucun hébergement.
   ponctuelles. **Ne jamais supprimer de branche.**
 - `main` est protégée et exige une review. Personne ne fusionne sa propre PR.
 - Les documents du dépôt n'utilisent pas de tiret cadratin.
-- Les identifiants ne sont jamais dans le code : `MBDA_SMTP_USER`,
-  `MBDA_SMTP_PASSWORD`, `MBDA_SMTP_TO` pour les alertes, `MBDA_KEYFILE` pour
-  BigQuery. Le mot de passe Gmail est un mot de passe d'application.
-- Le callback d'alerte ne part **qu'après épuisement des relances**, soit trois
-  essais toutes les 5 minutes. Une tâche en `UP_FOR_RETRY` n'a pas encore
-  alerté. Pour tester vite, dupliquer le DAG avec `retries: 0` :
-  `airflow tasks test` n'exécute pas les callbacks, seul `dags test` le fait.
+- Les identifiants ne sont jamais dans le code : `MBDA_KEYFILE` pour BigQuery.
+- **Plus de système d'alerte** (mail GitHub Actions et callback Airflow
+  retirés le 2026-09-18) : le projet est soutenu, plus personne ne surveille
+  d'exécution planifiée.
 
 ## Vérifier avant de proposer
 

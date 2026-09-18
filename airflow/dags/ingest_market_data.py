@@ -15,7 +15,7 @@ RACINE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import (  # noqa: E402
-    alerte, bigquery_io, config, controles, frankfurter, worldbank, yahoo)
+    bigquery_io, config, controles, frankfurter, worldbank, yahoo)
 
 CHAMPS_INSTRUMENT = ("instrument_id", "libelle", "classe_actif", "secteur", "sous_secteur")
 
@@ -34,7 +34,6 @@ DBT = f"cd {RACINE}/dbt_pipeline && {RACINE}/venv/bin/dbt"
         "owner": "gblack98",
         "retries": 3,
         "retry_delay": timedelta(minutes=5),
-        "on_failure_callback": alerte.sur_echec,
     },
     tags=["ingestion", "dbt", "quotidien"],
 )

@@ -189,9 +189,52 @@ fi
 export AIRFLOW_HOME="$RACINE/airflow_home"
 export AIRFLOW__CORE__DAGS_FOLDER="$RACINE/airflow/dags"
 export AIRFLOW__CORE__LOAD_EXAMPLES=False
-export MBDA_SMTP_USER="${MBDA_SMTP_USER:-}"
-export MBDA_SMTP_PASSWORD="${MBDA_SMTP_PASSWORD:-}"
-export MBDA_SMTP_TO="${MBDA_SMTP_TO:-}"
+
+# Purge de securite : un DagRun de cette meme epoque peut encore trainer en
+# base, pret a repartir des qu'un humain depausera le DAG depuis l'interface.
+# La pause n'empeche que l'ordonnancement, pas l'execution d'un run deja en
+# file. On neutralise donc tout run non termine a chaque demarrage, qu'il y
+# en ait un ou pas.
+#
+# Avant le lancement des services, volontairement : l'ordonnanceur n'existe
+# pas encore, personne d'autre n'ecrit dans la base, et un SQLite verrouille
+# ne peut pas faire echouer la purge en silence. Seules les taches inachevees
+# sont marquees : celles qui avaient reussi gardent leur etat, sans quoi un
+# run interrompu a mi-chemin s'afficherait entierement rouge.
+if ! ( export PATH="$VENV_AIRFLOW/bin:$PATH"
+  "$VENV_AIRFLOW/bin/python" - <<'PY'
+from sqlalchemy import or_
+
+from airflow.models import DagRun, TaskInstance
+from airflow.utils.session import create_session
+from airflow.utils.state import DagRunState, State
+
+DAG_ID = "ingest_market_data"
+INACHEVEES = [etat for etat in State.unfinished if etat is not None]
+
+with create_session() as session:
+    runs = [
+        run_id
+        for (run_id,) in session.query(DagRun.run_id)
+        .filter(DagRun.dag_id == DAG_ID)
+        .filter(DagRun.state.in_([DagRunState.QUEUED, DagRunState.RUNNING]))
+        .all()
+    ]
+    if runs:
+        session.query(TaskInstance).filter(
+            TaskInstance.dag_id == DAG_ID,
+            TaskInstance.run_id.in_(runs),
+            or_(TaskInstance.state.is_(None), TaskInstance.state.in_(INACHEVEES)),
+        ).update({TaskInstance.state: State.FAILED}, synchronize_session=False)
+        session.query(DagRun).filter(
+            DagRun.dag_id == DAG_ID, DagRun.run_id.in_(runs)
+        ).update({DagRun.state: DagRunState.FAILED}, synchronize_session=False)
+        session.commit()
+        print(f"{len(runs)} DagRun(s) residuel(s) neutralise(s) : {', '.join(runs)}")
+PY
+) > "$JOURNAUX/airflow.log" 2>&1; then
+  info "purge des DagRuns residuels impossible, voir logs/airflow.log"
+fi
 
 PIDS=()
 arreter() {
@@ -207,9 +250,10 @@ trap arreter INT TERM
 titre "Services"
 
 # standalone relance ses sous-processus via le PATH : pointer le binaire ne
-# suffit pas.
+# suffit pas. Ajout au journal, pas ecrasement : la purge ci-dessus l'a ouvert
+# la premiere et y a laisse son compte rendu.
 ( export PATH="$VENV_AIRFLOW/bin:$PATH"
-  exec "$VENV_AIRFLOW/bin/airflow" standalone ) > "$JOURNAUX/airflow.log" 2>&1 &
+  exec "$VENV_AIRFLOW/bin/airflow" standalone ) >> "$JOURNAUX/airflow.log" 2>&1 &
 PIDS+=($!)
 info "Airflow demarre, journal dans logs/airflow.log"
 
@@ -233,39 +277,6 @@ for _ in $(seq 1 40); do [ -f "$MDP" ] && break; sleep 1; done
 #
 # Pour le lancer, l'interrupteur est en haut a gauche dans l'interface, puis
 # le bouton de declenchement. Un geste, et il est conscient.
-
-# Purge de securite : un DagRun de cette meme epoque peut encore trainer en
-# base, pret a repartir des qu'un humain depausera le DAG depuis l'interface.
-# La pause n'empeche que l'ordonnancement, pas l'execution d'un run deja en
-# file. On neutralise donc tout run non termine a chaque demarrage, qu'il y
-# en ait un ou pas.
-( export PATH="$VENV_AIRFLOW/bin:$PATH"
-  "$VENV_AIRFLOW/bin/python" - <<'PY'
-from airflow.models import DagRun, TaskInstance
-from airflow.utils.session import create_session
-from airflow.utils.state import DagRunState, TaskInstanceState
-
-DAG_ID = "ingest_market_data"
-
-with create_session() as session:
-    runs = [
-        run_id
-        for (run_id,) in session.query(DagRun.run_id)
-        .filter(DagRun.dag_id == DAG_ID)
-        .filter(DagRun.state.in_([DagRunState.QUEUED, DagRunState.RUNNING]))
-        .all()
-    ]
-    if runs:
-        session.query(TaskInstance).filter(
-            TaskInstance.dag_id == DAG_ID, TaskInstance.run_id.in_(runs)
-        ).update({TaskInstance.state: TaskInstanceState.FAILED}, synchronize_session=False)
-        session.query(DagRun).filter(
-            DagRun.dag_id == DAG_ID, DagRun.run_id.in_(runs)
-        ).update({DagRun.state: DagRunState.FAILED}, synchronize_session=False)
-        session.commit()
-        print(f"{len(runs)} DagRun(s) residuel(s) neutralise(s) : {', '.join(runs)}")
-PY
-) >> "$JOURNAUX/airflow.log" 2>&1 || true
 
 cat <<EOF
 
