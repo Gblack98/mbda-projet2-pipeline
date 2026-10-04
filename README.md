@@ -1,4 +1,4 @@
-# Pipeline analytics — matières premières et devises
+# Pipeline analytics : matieres premieres et devises
 
 Collecte quotidienne de 41 instruments financiers et de 15 devises, structurés
 en schéma en étoile puis agrégés en indicateurs.
